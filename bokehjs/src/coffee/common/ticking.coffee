@@ -277,10 +277,11 @@ define [
                    @max_intervals[scale_ndxs[1]]]
       errors = intervals.map((interval) ->
         return Math.abs(desired_n_ticks - (data_range / interval)))
-
-      best_scale_ndx = scale_ndxs[argmin(errors)]
+      best_index = argmin(errors)
+      if best_index == Infinity
+        return @scales[0]
+      best_scale_ndx = scale_ndxs[best_index]
       best_scale = @scales[best_scale_ndx]
-
       return best_scale
 
     get_interval: (data_low, data_high, desired_n_ticks) ->
@@ -747,5 +748,3 @@ define [
     "BasicTickFormatter": BasicTickFormatter,
     "DatetimeFormatter": DatetimeFormatter,
   }
-
-

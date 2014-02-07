@@ -1,4 +1,3 @@
-
 define [
   "underscore",
   "backbone",
@@ -501,4 +500,3 @@ define [
     "Collection": new Plots(),
     "View": PlotView,
   }
-

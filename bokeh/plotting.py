@@ -10,7 +10,7 @@ import time
 import warnings
 
 from . import glyphs, browserlib, serverconfig
-from .objects import ColumnDataSource, Glyph, Grid, GridPlot, Legend, Axis
+from .objects import RemoteDataSource, ColumnDataSource, Glyph, Grid, GridPlot, Legend, LinearAxis
 from .plotting_helpers import (get_default_color, get_default_alpha,
         _glyph_doc, _match_data_params, _update_plot_data_ranges,
         _materialize_colors_and_alpha, _get_legend, _make_legend,
@@ -441,8 +441,16 @@ def _glyph_function(glyphclass, argnames, docstring, xfields=["x"], yfields=["y"
     @visual
     def func(*args, **kwargs):
       # Process the keyword arguments that are not glyph-specific
-        datasource = kwargs.pop("source", ColumnDataSource())
-        session_objs = [datasource]
+        seesion_objs = []
+        source = kwargs.pop('source', None)
+        if isinstance(source, RemoteDataSource):
+            datasource = ColumnDataSource()
+            remotesource = source
+            session_objs.append(remotesource)
+        elif source is None:
+            datasource = ColumnDataSource()
+            remotesource = None
+        session_objs.append(datasource)
         legend_name = kwargs.pop("legend", None)
         plot = _get_plot(kwargs)
         if 'name' in kwargs:
@@ -452,7 +460,8 @@ def _glyph_function(glyphclass, argnames, docstring, xfields=["x"], yfields=["y"
 
         # Process the glyph dataspec parameters
         glyph_params = _match_data_params(argnames, glyphclass,
-            datasource, args, _materialize_colors_and_alpha(kwargs))
+                                          datasource, remotesource,
+                                          args, _materialize_colors_and_alpha(kwargs))
 
         x_data_fields = [
             glyph_params[xx]['field'] for xx in xfields if glyph_params[xx]['units'] == 'data']
@@ -473,6 +482,7 @@ def _glyph_function(glyphclass, argnames, docstring, xfields=["x"], yfields=["y"
 
         glyph_renderer = Glyph(
             data_source = datasource,
+            remote_data_source=remotesource,
             plot = plot,
             glyph=glyph,
             nonselection_glyph=nonselection_glyph,
@@ -1183,7 +1193,7 @@ def xaxis():
     p = curplot()
     if p is None:
         return None
-    axis = [obj for obj in p.renderers if isinstance(obj, Axis) and obj.dimension==0]
+    axis = [obj for obj in p.renderers if isinstance(obj, LinearAxis) and obj.dimension==0]
     return _list_attr_splat(axis)
 
 def yaxis():
@@ -1195,7 +1205,7 @@ def yaxis():
     p = curplot()
     if p is None:
         return None
-    axis = [obj for obj in p.renderers if isinstance(obj, Axis) and obj.dimension==1]
+    axis = [obj for obj in p.renderers if isinstance(obj, LinearAxis) and obj.dimension==1]
     return _list_attr_splat(axis)
 
 def axis():
