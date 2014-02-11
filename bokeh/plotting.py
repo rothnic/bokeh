@@ -441,7 +441,7 @@ def _glyph_function(glyphclass, argnames, docstring, xfields=["x"], yfields=["y"
     @visual
     def func(*args, **kwargs):
       # Process the keyword arguments that are not glyph-specific
-        seesion_objs = []
+        session_objs = []
         source = kwargs.pop('source', None)
         if isinstance(source, RemoteDataSource):
             datasource = ColumnDataSource()

@@ -17,5 +17,5 @@ image(
     x_range = Range1d(start=0, end=10), y_range = Range1d(start=0, end=10),
     tools="pan,wheel_zoom,box_zoom,reset,previewsave", name="image_example"
 )
-
+import pdb;pdb.set_trace()
 show()  # open a browser

@@ -12,7 +12,7 @@ define [
         @setup_remote_data()
       @listenTo(this, 'change:remote_data_source', () =>
         if @remote
-          @remote.stoplistening_for_line1d_updates(@mget_obj('data_source'))
+          @remote.stoplistening_for_updates(@mget_obj('data_source'))
           @setup_remote_data()
       )
 
