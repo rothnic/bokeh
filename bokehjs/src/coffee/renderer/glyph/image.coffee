@@ -17,14 +17,14 @@ define [
       remote = @mget_obj('remote_data_source')
       # hack, call set data, becuase there are some attrs that we need
       # that are in it
-      @mget_obj('data_source').set('data', remote.get('data'))
+      data = _.extend({}, @mget_obj('data_source').get('data'), remote.get('data'))
+      @mget_obj('data_source').set('data', data)
+      @set_data(false)
 
       @bound_remote = remote
       remote.listen_for_heatmap_updates(@mget_obj('data_source'),
         @plot_view.x_range,
         @plot_view.y_range,
-        [0, @dw],
-        [0, @dh],
         @plot_view.view_state.get('inner_range_horizontal'),
         @plot_view.view_state.get('inner_range_vertical'),
       )
@@ -50,7 +50,6 @@ define [
 
       if not @height? or @height.length != @image.length
         @height = new Array(@image.length)
-
       for i in [0...@image.length]
         if @rows?
           @height[i] = @rows[i]
@@ -86,6 +85,8 @@ define [
       ctx.setImageSmoothingEnabled(false)
 
       for i in indices
+        if not this.image_data[i]?
+          continue
 
         if isNaN(@sx[i] + @sy[i] + @sw[i] + @sh[i])
           continue
@@ -95,6 +96,12 @@ define [
         ctx.translate(0, y_offset)
         ctx.scale(1, -1)
         ctx.translate(0, -y_offset)
+        console.log('xrange', this.plot_view.x_range.get('start'),
+          this.plot_view.x_range.get('end'))
+        console.log('yrange', this.plot_view.y_range.get('start'),
+          this.plot_view.y_range.get('end'))
+        console.log('x', this.x, 'y', this.y, 'dw', this.dw, 'dh', this.dh)
+        console.log('sx', @sx[i]|0, 'sy', @sy[i]|0, 'sw', @sw[i], 'sh', @sh[i])
         ctx.drawImage(@image_data[i], @sx[i]|0, @sy[i]|0, @sw[i], @sh[i])
         ctx.translate(0, y_offset)
         ctx.scale(1, -1)
@@ -116,4 +123,3 @@ define [
     "Model": ImageGlyph,
     "View": ImageView,
   }
-

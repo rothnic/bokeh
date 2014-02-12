@@ -76,18 +76,18 @@ define [
       )
 
     listen_for_heatmap_updates : (column_data_source, x_data_range,
-          y_data_range, global_x_range, global_y_range,
+          y_data_range,
           x_screen_range, y_screen_range,
             ) ->
       #ensure we only have one set of events bound
       @stoplistening_for_updates(column_data_source)
       @heatmap_update(column_data_source, x_data_range,
-          y_data_range, global_x_range, global_y_range,
+          y_data_range,
           x_screen_range, y_screen_range,
         )
       throttle = _.throttle(@heatmap_update, 300)
       callback = () => throttle(column_data_source, x_data_range,
-          y_data_range, global_x_range, global_y_range,
+          y_data_range,
           x_screen_range, y_screen_range,
       )
       @callbacks[column_data_source.get('id')] = []
@@ -98,21 +98,25 @@ define [
       return null
 
     heatmap_update : (column_data_source, x_data_range,
-          y_data_range, global_x_range, global_y_range,
+          y_data_range,
           x_screen_range, y_screen_range) =>
-      column_data_source.set('data', @get('data'))
       data_url = @get('data_url')
       owner_username = @get('owner_username')
       prefix = @base().Config.prefix
       url = "#{prefix}/bokeh/data2/#{owner_username}#{data_url}"
       x_resolution = x_screen_range.get('end') - x_screen_range.get('start')
       y_resolution = y_screen_range.get('end') - y_screen_range.get('start')
-      x_bounds = x_data_range.get('start') - x_data_range.get('end')
-      y_bounds = y_data_range.get('start') - y_data_range.get('end')
-
-      params = [global_x_range, global_y_range,
+      x_bounds = [x_data_range.get('start'), x_data_range.get('end')]
+      y_bounds = [y_data_range.get('start'), y_data_range.get('end')]
+      global_dw = @get('data').global_dw[0]
+      global_dh = @get('data').global_dh[0]
+      global_offset_x = @get('data').global_offset_x[0]
+      global_offset_y = @get('data').global_offset_y[0]
+      params = [global_dw, global_dh,
+        global_offset_x, global_offset_y,
         x_bounds, y_bounds, x_resolution, y_resolution]
       params = JSON.stringify(params)
+      console.log(y_bounds)
       $.ajax(
         dataType: 'json'
         url : url
@@ -120,9 +124,10 @@ define [
           withCredentials : true
         success : (data) ->
           #hack
-          new_data = _.copy(column_data_source.get('data'))
-          new_data['image'] = data.data
-          column_data_source.set('data', old_data)
+          new_data = _.clone(column_data_source.get('data'))
+          _.extend(new_data, data)
+          column_data_source.set('data', new_data)
+          console.log('setting data', data.image.length, data.image[0].length)
         data :
           downsample_function : 'heatmap'
           downsample_parameters : params

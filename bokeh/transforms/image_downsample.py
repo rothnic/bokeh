@@ -3,10 +3,24 @@ import scipy.misc
 import numpy as np
 def downsample(image, image_x_axis, image_y_axis,
                x_bounds, y_bounds, x_resolution, y_resolution):
+    x_resolution, y_resolution = int(round(x_resolution)), int(round(y_resolution))
     x_bounds = np.searchsorted(image_x_axis, x_bounds)
     y_bounds = np.searchsorted(image_y_axis, y_bounds)
-    subset = image[x_bounds[0]:x_bounds[1],
-                   y_bounds[0]:y_bounds[1]]
-    return scipy.misc.imresize(image, (x_resolution, y_resolution),
-                               interp='bicubic')
+    #y_bounds = image.shape[0] + 1 - y_bounds[::-1]
+    print x_bounds, y_bounds
+    subset = image[y_bounds[0]:y_bounds[1],
+                   x_bounds[0]:x_bounds[1],]
+    image = scipy.misc.imresize(subset, (x_resolution, y_resolution),
+                        interp='nearest')
+    bounds = image_x_axis[x_bounds[0]:x_bounds[1]]
+    dw = np.max(bounds) - np.min(bounds)
+    bounds = image_y_axis[y_bounds[0]:y_bounds[1]]
+    dh = np.max(bounds) - np.min(bounds)
+    return {'data' : image,
+            'offset_x' : image_x_axis[x_bounds[0]],
+            'offset_y' : image_y_axis[y_bounds[0]],
+            'dw' : dw,
+            'dh' : dh,
+            'subset' : subset,
+    }
                         

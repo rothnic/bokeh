@@ -398,20 +398,26 @@ class HDF5DataBackend(AbstractDataBackend):
     
     def heatmap_downsample(self, request_username, request_docid, data_url, 
                           downsample_function, downsample_parameters):
-        import pdb;pdb.set_trace()
         dataset = self.client[data_url].node
-        (global_x_range, global_y_range,
+        (global_dw, global_dh, global_offset_x, global_offset_y,
          x_bounds, y_bounds, x_resolution, y_resolution) = downsample_parameters
-        image_x_axis = np.linspace(global_x_range[0], 
-                                   global_x_range[1], 
+        print downsample_parameters
+        image_x_axis = np.linspace(0, 
+                                   global_dw,
                                    dataset.shape[1])
-        image_y_axis = np.linspace(global_y_range[0],
-                                   global_y_range[1],
+        image_y_axis = np.linspace(0,
+                                   global_dh,
                                    dataset.shape[0])
-        image = image_downsample.downsample(dataset, image_x_axis, image_y_axis,
-                                            x_bounds, y_bounds, x_resolution,
-                                            y_resolution)
-        return {'data' : image}
+        result = image_downsample.downsample(dataset, image_x_axis, image_y_axis,
+                                             x_bounds, y_bounds, x_resolution,
+                                             y_resolution)
+        output = {}
+        output['image'] = [result['data']]
+        output['x'] = [global_offset_x + result['offset_x']]
+        output['y'] = [global_offset_y + result['offset_y']]
+        output['dw'] = [result['dw']]
+        output['dh'] = [result['dh']]
+        return output
 
     def get_data(self, request_username, request_docid, data_url, 
                  downsample_function, downsample_parameters):
