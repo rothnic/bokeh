@@ -12,7 +12,7 @@ def downsample(data,
     data : record numpy array of values, shape (N,)
     domain_column : column index representing the domain of the plot
     primary_data_column : column index of data that is used for
-    min/max/median decimation
+    min/max decimation
     domain_limit : bounds of domain (tuple of length 2)
     domain_resolution : # of samples
     method : 'all' or 'median' encodes the max/min/median point.  'mean' 
@@ -40,7 +40,7 @@ def downsample(data,
                                           side='left').tolist()
     ending_boundaries = starting_boundaries[1:]
     ending_boundaries.append(None)
-    if len(starting_boundaries) * 3 > len(data):
+    if len(starting_boundaries) * 2 > len(data):
         return data
 
     downsampled_data = []
@@ -51,10 +51,9 @@ def downsample(data,
         #downsample
         primary_column = subdata[primary_data_column]
         idx = np.argsort(primary_column)
-        median_idx = math.floor(len(idx) / 2.)
         min_idx = idx[0]
         max_idx = idx[-1]
-        subdata = subdata[[min_idx, median_idx, max_idx]]
+        subdata = subdata[[min_idx, max_idx]]
         
         downsampled_data.append(subdata)
     downsampled_data = np.concatenate(downsampled_data)
