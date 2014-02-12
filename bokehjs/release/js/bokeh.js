@@ -14296,20 +14296,29 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
         return bulk_save([this.model]);
       };
 
+      PlotView.prototype.set_initial_range = function() {
+        return this.initial_range_info = {
+          xr: {
+            start: this.x_range.get('start'),
+            end: this.x_range.get('end')
+          },
+          yr: {
+            start: this.y_range.get('start'),
+            end: this.y_range.get('end')
+          }
+        };
+      };
+
       PlotView.prototype.render = function(force) {
-        var have_new_mapper_state, hpadding, k, level, pr, renderers, sx, sy, sym, th, title, v, xms, yms, _i, _j, _len, _len1, _ref1, _ref2, _ref3;
+        var good_vals, have_new_mapper_state, hpadding, k, level, pr, range_vals, renderers, sx, sy, sym, th, title, v, xms, yms, _i, _j, _len, _len1, _ref1, _ref2, _ref3;
         PlotView.__super__.render.call(this);
-        if ((this.initial_range_info == null) && (this.x_range.get('start') != null)) {
-          this.initial_range_info = {
-            xr: {
-              start: this.x_range.get('start'),
-              end: this.x_range.get('end')
-            },
-            yr: {
-              start: this.y_range.get('start'),
-              end: this.y_range.get('end')
-            }
-          };
+        range_vals = [this.x_range.get('start'), this.x_range.get('end'), this.y_range.get('start'), this.y_range.get('end')];
+        good_vals = _.map(range_vals, function(val) {
+          return (val != null) && !_.isNaN(val);
+        });
+        good_vals = _.all(good_vals);
+        if ((this.initial_range_info == null) && good_vals) {
+          this.set_initial_range();
         }
         this.requested_padding = {
           top: 0,
