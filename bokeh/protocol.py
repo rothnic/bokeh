@@ -1,5 +1,7 @@
 import uuid
 import json
+import datetime as dt
+import time
 import logging
 import time
 from six.moves import cPickle as pickle
@@ -33,6 +35,12 @@ class NumpyJSONEncoder(json.JSONEncoder):
             if obj.dtype.kind == 'M':
                 #FIXME this truncates to ms.... probably should do something else
                 return obj.astype('datetime64[ms]').astype('int64').tolist()
+            elif obj.dtype.kind == 'f':
+                nans = np.isnan(obj)
+                if np.any(nans):
+                    result = obj.astype('object')
+                    result[nans] = 'NaN'
+                    return result.tolist()
             return obj.tolist()
         elif isinstance(obj, np.number):
             if isinstance(obj, np.integer):
@@ -41,6 +49,11 @@ class NumpyJSONEncoder(json.JSONEncoder):
                 return float(obj)
         elif isinstance(obj, pd.tslib.Timestamp):
             return obj.value / millifactor
+        elif isinstance(obj, (dt.datetime, dt.date)):
+            return time.mktime(obj.timetuple()) * 1000.
+
+        elif obj == np.nan:
+            return "nan"
         else:
             return super(NumpyJSONEncoder, self).default(obj)
 
