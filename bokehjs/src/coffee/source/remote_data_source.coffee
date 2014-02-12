@@ -72,38 +72,43 @@ define [
           downsample_parameters : params
       )
 
-    listen_for_heatmap_updates : (column_data_source, domain_range, screen_range
-                                  primary_column, domain_name, columns) ->
+    listen_for_heatmap_updates : (column_data_source, x_data_range,
+          y_data_range, global_x_range, global_y_range,
+          x_screen_range, y_screen_range,
+            ) ->
       #ensure we only have one set of events bound
       @stoplistening_for_updates(column_data_source)
-      @heatmap_update(column_data_source, domain_range, screen_range
-          primary_column, domain_name, columns
+      @heatmap_update(column_data_source, x_data_range,
+          y_data_range, global_x_range, global_y_range,
+          x_screen_range, y_screen_range,
         )
       throttle = _.throttle(@heatmap_update, 300)
-      callback = () => throttle(column_data_source, domain_range, screen_range
-        primary_column, domain_name, columns
+      callback = () => throttle(column_data_source, x_data_range,
+          y_data_range, global_x_range, global_y_range,
+          x_screen_range, y_screen_range,
       )
-      @listenTo(screen_range, 'change', callback)
-      @listenTo(domain_range, 'change', callback)
-      @callbacks[column_data_source.get('id')] = [
-        [screen_range, 'change', callback],
-        [domain_range, 'change', callback]
-      ]
+      @callbacks[column_data_source.get('id')] = []
+      for range in [x_data_range, y_data_range, x_screen_range, y_screen_range]
+        @listenTo(range, 'change', callback)
+        @callbacks[column_data_source.get('id')].push([range, 'change', callback])
 
-    heatmap_update : (column_data_source, domain_range, screen_range,
-                     primary_column, domain_name, columns) =>
+      return null
+
+    heatmap_update : (column_data_source, x_data_range,
+          y_data_range, global_x_range, global_y_range,
+          x_screen_range, y_screen_range) =>
+      column_data_source.set('data', @get('data'))
       data_url = @get('data_url')
       owner_username = @get('owner_username')
       prefix = @base().Config.prefix
       url = "#{prefix}/bokeh/data2/#{owner_username}#{data_url}"
-      domain_resolution = (screen_range.get('end') - screen_range.get('start')) / 2
-      domain_resolution = Math.floor(domain_resolution)
-      domain_limit = [domain_range.get('start'), domain_range.get('end')]
-      if _.any(_.map(domain_limit, (x) -> _.isNaN(x)))
-        domain_limit = 'auto'
-      params = [primary_column, domain_name, columns,
-          domain_limit
-        , domain_resolution]
+      x_resolution = x_screen_range.get('end') - x_screen_range.get('start')
+      y_resolution = y_screen_range.get('end') - y_screen_range.get('start')
+      x_bounds = x_data_range.get('start') - x_data_range.get('end')
+      y_bounds = y_data_range.get('start') - y_data_range.get('end')
+
+      params = [global_x_range, global_y_range,
+        x_bounds, y_bounds, x_resolution, y_resolution]
       params = JSON.stringify(params)
       $.ajax(
         dataType: 'json'
@@ -111,14 +116,10 @@ define [
         xhrField :
           withCredentials : true
         success : (data) ->
-          if domain_limit == 'auto'
-            domain_range.set(
-              start : data.domain_limit[0],
-              end : data.domain_limit[1]
-            )
-            console.log('setting range', data.domain_limit)
-          column_data_source.set('data', data.data)
-          console.log('setting data', _.values(data.data)[0].length)
+          #hack
+          new_data = _.copy(column_data_source.get('data'))
+          new_data['image'] = data.data
+          column_data_source.set('data', old_data)
         data :
           downsample_function : 'heatmap'
           downsample_parameters : params

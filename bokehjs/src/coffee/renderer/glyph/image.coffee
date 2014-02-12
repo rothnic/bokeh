@@ -13,6 +13,22 @@ define [
 
     _properties: []
 
+    setup_remote_data : () ->
+      remote = @mget_obj('remote_data_source')
+      # hack, call set data, becuase there are some attrs that we need
+      # that are in it
+      @mget_obj('data_source').set('data', remote.get('data'))
+
+      @bound_remote = remote
+      remote.listen_for_heatmap_updates(@mget_obj('data_source'),
+        @plot_view.x_range,
+        @plot_view.y_range,
+        [0, @dw],
+        [0, @dh],
+        @plot_view.view_state.get('inner_range_horizontal'),
+        @plot_view.view_state.get('inner_range_vertical'),
+      )
+
     initialize: (options) ->
       # the point of this is to support both efficient ArrayBuffers as well as dumb
       # arrays of arrays that the python interface currently uses. If the glyphspec
