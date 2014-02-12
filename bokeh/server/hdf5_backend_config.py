@@ -12,6 +12,7 @@ global_config = dict(
         '*.CSV' : PandasCSVNode,
         '*.hdf5' : PandasHDFNode,
         '*.h5' : PandasHDFNode,
+        '*.pandas' : PandasHDFNode,
         '*.sql' : SimpleQueryTable,
         '*.table' : PyTables,
         },
