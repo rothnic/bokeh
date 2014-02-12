@@ -13080,6 +13080,73 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  define('mapper/1d/categorical_mapper',["./linear_mapper"], function(LinearMapper) {
+    var CategoricalMapper, _ref;
+    return CategoricalMapper = (function(_super) {
+      __extends(CategoricalMapper, _super);
+
+      function CategoricalMapper() {
+        _ref = CategoricalMapper.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      CategoricalMapper.prototype.map_to_target = function(x) {
+        var factors;
+        if (typeof x === 'number') {
+          return CategoricalMapper.__super__.map_to_target.call(this, x);
+        }
+        factors = this.get('source_range').get('factors');
+        return CategoricalMapper.__super__.map_to_target.call(this, factors.indexOf(x) + 1);
+      };
+
+      CategoricalMapper.prototype.v_map_to_target = function(xs) {
+        var factors, x;
+        if (typeof xs[0] === 'number') {
+          return CategoricalMapper.__super__.v_map_to_target.call(this, xs);
+        }
+        factors = this.get('source_range').get('factors');
+        return CategoricalMapper.__super__.v_map_to_target.call(this, (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = xs.length; _i < _len; _i++) {
+            x = xs[_i];
+            _results.push(factors.indexOf(x) + 1);
+          }
+          return _results;
+        })());
+      };
+
+      CategoricalMapper.prototype.map_from_target = function(xprime) {
+        var factors;
+        xprime = CategoricalMapper.__super__.map_from_target.call(this, xprime) - 0.5;
+        factors = this.get('source_range').get('factors');
+        return factors[Math.floor(xprime)];
+      };
+
+      CategoricalMapper.prototype.v_map_from_target = function(xprimes) {
+        var factors, i, result, _i, _ref1;
+        result = CategoricalMapper.__super__.v_map_from_target.call(this, xprimes);
+        factors = this.get('source_range').get('factors');
+        for (i = _i = 0, _ref1 = result.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+          result[i] = factors[Math.floor(result[i] - 0.5)];
+        }
+        return result;
+      };
+
+      return CategoricalMapper;
+
+    })(LinearMapper);
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=categorical_mapper.js.map
+*/;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   define('mapper/2d/grid_mapper',["common/has_properties"], function(HasProperties) {
     var GridMapper, _ref;
     return GridMapper = (function(_super) {
@@ -13882,7 +13949,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('common/plot',["underscore", "backbone", "require", "./build_views", "./safebind", "./bulk_save", "./continuum_view", "./has_parent", "./view_state", "mapper/1d/linear_mapper", "mapper/2d/grid_mapper", "renderer/properties", "tool/active_tool_manager"], function(_, Backbone, require, build_views, safebind, bulk_save, ContinuumView, HasParent, ViewState, LinearMapper, GridMapper, Properties, ActiveToolManager) {
+  define('common/plot',["underscore", "backbone", "require", "./build_views", "./safebind", "./bulk_save", "./continuum_view", "./has_parent", "./view_state", "mapper/1d/linear_mapper", "mapper/1d/categorical_mapper", "mapper/2d/grid_mapper", "renderer/properties", "tool/active_tool_manager"], function(_, Backbone, require, build_views, safebind, bulk_save, ContinuumView, HasParent, ViewState, LinearMapper, CategoricalMapper, GridMapper, Properties, ActiveToolManager) {
     var LEVELS, Plot, PlotView, Plots, delay_animation, line_properties, text_properties, throttle_animation, _ref, _ref1, _ref2;
     line_properties = Properties.line_properties;
     text_properties = Properties.text_properties;
@@ -13995,7 +14062,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.initialize = function(options) {
-        var level, _i, _len, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+        var level, xmapper_type, ymapper_type, _i, _len, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
         PlotView.__super__.initialize.call(this, _.defaults(options, this.default_options));
         this.throttled_render = throttle_animation(this.render, 15);
         this.throttled_render_canvas = throttle_animation(this.render_canvas, 15);
@@ -14020,11 +14087,19 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
         this.hidpi = (_ref15 = options.hidpi) != null ? _ref15 : this.mget('hidpi');
         this.x_range = (_ref16 = options.x_range) != null ? _ref16 : this.mget_obj('x_range');
         this.y_range = (_ref17 = options.y_range) != null ? _ref17 : this.mget_obj('y_range');
-        this.xmapper = new LinearMapper({
+        xmapper_type = LinearMapper;
+        if (this.x_range.type === "FactorRange") {
+          xmapper_type = CategoricalMapper;
+        }
+        this.xmapper = new xmapper_type({
           source_range: this.x_range,
           target_range: this.view_state.get('inner_range_horizontal')
         });
-        this.ymapper = new LinearMapper({
+        ymapper_type = LinearMapper;
+        if (this.y_range.type === "FactorRange") {
+          ymapper_type = CategoricalMapper;
+        }
+        this.ymapper = new ymapper_type({
           source_range: this.y_range,
           target_range: this.view_state.get('inner_range_vertical')
         });
@@ -15716,9 +15791,26 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
 
       FactorRange.prototype.type = 'FactorRange';
 
+      FactorRange.prototype.initialize = function(attrs, options) {
+        FactorRange.__super__.initialize.call(this, attrs, options);
+        this.register_property('end', function() {
+          return this.get('factors').length + 0.5;
+        }, true);
+        this.add_dependencies('end', this, ['factors']);
+        this.register_property('min', function() {
+          return this.get('start');
+        }, true);
+        this.add_dependencies('min', this, ['factors']);
+        this.register_property('max', function() {
+          return this.get('end');
+        }, true);
+        return this.add_dependencies('max', this, ['factors']);
+      };
+
       FactorRange.prototype.defaults = function() {
         return {
-          values: []
+          start: 0.5,
+          factors: []
         };
       };
 
@@ -16056,7 +16148,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
           this.need_set_data = false;
         }
         this._map_data();
-        if (this._mask_data != null) {
+        if ((this._mask_data != null) && (this.plot_view.x_range.type !== "FactorRange") && (this.plot_view.y_range.type !== "FactorRange")) {
           indices = this._mask_data();
         } else {
           indices = this.all_indices;
@@ -17705,7 +17797,7 @@ if (typeof define === 'function' && define.amd) {
           y0 -= this.max_radius;
           y1 += this.max_radius;
         }
-        return this.mask = (function() {
+        return (function() {
           var _i, _len, _ref5, _results;
           _ref5 = this.index.search([x0, y0, x1, y1]);
           _results = [];
@@ -18685,6 +18777,14 @@ if (typeof define === 'function' && define.amd) {
 
       ImageView.prototype._properties = [];
 
+      ImageView.prototype.setup_remote_data = function() {
+        var remote;
+        remote = this.mget_obj('remote_data_source');
+        this.mget_obj('data_source').set('data', remote.get('data'));
+        this.bound_remote = remote;
+        return remote.listen_for_heatmap_updates(this.mget_obj('data_source'), this.plot_view.x_range, this.plot_view.y_range, [0, this.dw], [0, this.dh], this.plot_view.view_state.get('inner_range_horizontal'), this.plot_view.view_state.get('inner_range_vertical'));
+      };
+
       ImageView.prototype.initialize = function(options) {
         var spec;
         spec = this.mget('glyphspec');
@@ -18697,11 +18797,8 @@ if (typeof define === 'function' && define.amd) {
       };
 
       ImageView.prototype._set_data = function(data) {
-        var buf, buf8, canvas, cmap, ctx, i, image_data, img, _i, _j, _ref1, _ref2, _results;
+        var buf, buf8, canvas, cmap, ctx, i, image_data, img, _i, _ref1, _results;
         this.data = data;
-        for (i = _i = 0, _ref1 = this.y.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
-          this.y[i] += this.dh[i];
-        }
         if ((this.image_data == null) || this.image_data.length !== this.image.length) {
           this.image_data = new Array(this.image.length);
         }
@@ -18712,7 +18809,7 @@ if (typeof define === 'function' && define.amd) {
           this.height = new Array(this.image.length);
         }
         _results = [];
-        for (i = _j = 0, _ref2 = this.image.length; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; i = 0 <= _ref2 ? ++_j : --_j) {
+        for (i = _i = 0, _ref1 = this.image.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
           if (this.rows != null) {
             this.height[i] = this.rows[i];
             this.width[i] = this.cols[i];
@@ -18724,7 +18821,6 @@ if (typeof define === 'function' && define.amd) {
           canvas.width = this.width[i];
           canvas.height = this.height[i];
           ctx = canvas.getContext('2d');
-          console.log(this.width[i], this.height[i]);
           image_data = ctx.getImageData(0, 0, this.width[i], this.height[i]);
           cmap = new LinearColorMapper({}, {
             palette: all_palettes[this.palette[i]]
@@ -18759,7 +18855,7 @@ if (typeof define === 'function' && define.amd) {
           if (isNaN(this.sx[i] + this.sy[i] + this.sw[i] + this.sh[i])) {
             continue;
           }
-          y_offset = this.sy[i] + this.sh[i] / 2;
+          y_offset = this.sy[i];
           ctx.translate(0, y_offset);
           ctx.scale(1, -1);
           ctx.translate(0, -y_offset);
@@ -19205,7 +19301,7 @@ if (typeof define === 'function' && define.amd) {
         }
         return this.listenTo(this, 'change:remote_data_source', function() {
           if (_this.remote) {
-            _this.remote.stoplistening_for_line1d_updates(_this.mget_obj('data_source'));
+            _this.remote.stoplistening_for_updates(_this.mget_obj('data_source'));
             return _this.setup_remote_data();
           }
         });
@@ -21912,7 +22008,9 @@ define("sprintf", (function (global) {
         this.toString_properties = toString_properties != null ? toString_properties : [];
       }
 
-      AbstractScale.prototype.get_ticks = function(data_low, data_high, desired_n_ticks) {
+      AbstractScale.prototype.get_ticks = function(data_low, data_high, range, _arg) {
+        var desired_n_ticks;
+        desired_n_ticks = _arg.desired_n_ticks;
         if (desired_n_ticks == null) {
           desired_n_ticks = DEFAULT_DESIRED_N_TICKS;
         }
@@ -22494,8 +22592,8 @@ define("sprintf", (function (global) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('renderer/guide/linear_axis',["underscore", "backbone", "common/safebind", "common/has_parent", "common/ticking", "common/plot_widget", "renderer/properties"], function(_, Backbone, safebind, HasParent, ticking, PlotWidget, Properties) {
-    var LinearAxes, LinearAxis, LinearAxisView, glyph_properties, line_properties, signum, text_properties, _align_lookup, _angle_lookup, _baseline_lookup, _ref, _ref1, _ref2;
+  define('renderer/guide/axis',["underscore", "backbone", "common/safebind", "common/has_parent", "common/plot_widget", "renderer/properties"], function(_, Backbone, safebind, HasParent, PlotWidget, Properties) {
+    var Axis, AxisView, glyph_properties, line_properties, signum, text_properties, _align_lookup, _align_lookup_negative, _align_lookup_positive, _angle_lookup, _baseline_lookup, _normal_lookup, _ref, _ref1;
     glyph_properties = Properties.glyph_properties;
     line_properties = Properties.line_properties;
     text_properties = Properties.text_properties;
@@ -22585,24 +22683,81 @@ define("sprintf", (function (global) {
         vertical: 'center'
       }
     };
-    LinearAxisView = (function(_super) {
-      __extends(LinearAxisView, _super);
+    _align_lookup_negative = {
+      top: 'right',
+      bottom: 'left',
+      left: 'right',
+      right: 'left'
+    };
+    _align_lookup_positive = {
+      top: 'left',
+      bottom: 'right',
+      left: 'right',
+      right: 'left'
+    };
+    _normal_lookup = [
+      {
+        norm: {
+          norm: {
+            'min': +1,
+            'max': -1
+          },
+          flip: {
+            'min': -1,
+            'max': +1
+          }
+        },
+        flip: {
+          norm: {
+            'min': +1,
+            'max': -1
+          },
+          flip: {
+            'min': -1,
+            'max': +1
+          }
+        }
+      }, {
+        norm: {
+          norm: {
+            'min': -1,
+            'max': +1
+          },
+          flip: {
+            'min': -1,
+            'max': +1
+          }
+        },
+        flip: {
+          norm: {
+            'min': +1,
+            'max': -1
+          },
+          flip: {
+            'min': +1,
+            'max': -1
+          }
+        }
+      }
+    ];
+    AxisView = (function(_super) {
+      __extends(AxisView, _super);
 
-      function LinearAxisView() {
-        _ref = LinearAxisView.__super__.constructor.apply(this, arguments);
+      function AxisView() {
+        _ref = AxisView.__super__.constructor.apply(this, arguments);
         return _ref;
       }
 
-      LinearAxisView.prototype.initialize = function(attrs, options) {
-        LinearAxisView.__super__.initialize.call(this, attrs, options);
+      AxisView.prototype.initialize = function(options) {
+        AxisView.__super__.initialize.call(this, options);
         this.rule_props = new line_properties(this, null, 'axis_');
         this.major_tick_props = new line_properties(this, null, 'major_tick_');
         this.major_label_props = new text_properties(this, null, 'major_label_');
         this.axis_label_props = new text_properties(this, null, 'axis_label_');
-        return this.formatter = new ticking.BasicTickFormatter();
+        return this.formatter = options.formatter;
       };
 
-      LinearAxisView.prototype.render = function() {
+      AxisView.prototype.render = function() {
         var ctx;
         ctx = this.plot_view.ctx;
         ctx.save();
@@ -22613,32 +22768,33 @@ define("sprintf", (function (global) {
         return ctx.restore();
       };
 
-      LinearAxisView.prototype.bind_bokeh_events = function() {
+      AxisView.prototype.bind_bokeh_events = function() {
         return safebind(this, this.model, 'change', this.request_render);
       };
 
-      LinearAxisView.prototype.padding_request = function() {
+      AxisView.prototype.padding_request = function() {
         return this._padding_request();
       };
 
-      LinearAxisView.prototype._draw_rule = function(ctx) {
-        var coords, i, sx, sy, x, y, _i, _ref1, _ref2, _ref3;
+      AxisView.prototype._draw_rule = function(ctx) {
+        var coords, i, nx, ny, sx, sy, x, y, _i, _ref1, _ref2, _ref3, _ref4;
         if (!this.rule_props.do_stroke) {
           return;
         }
         _ref1 = coords = this.mget('rule_coords'), x = _ref1[0], y = _ref1[1];
         _ref2 = this.plot_view.map_to_screen(x, "data", y, "data"), sx = _ref2[0], sy = _ref2[1];
+        _ref3 = this.mget('normals'), nx = _ref3[0], ny = _ref3[1];
         this.rule_props.set(ctx, this);
         ctx.beginPath();
         ctx.moveTo(Math.round(sx[0]), Math.round(sy[0]));
-        for (i = _i = 1, _ref3 = sx.length; 1 <= _ref3 ? _i < _ref3 : _i > _ref3; i = 1 <= _ref3 ? ++_i : --_i) {
+        for (i = _i = 1, _ref4 = sx.length; 1 <= _ref4 ? _i < _ref4 : _i > _ref4; i = 1 <= _ref4 ? ++_i : --_i) {
           ctx.lineTo(Math.round(sx[i]), Math.round(sy[i]));
         }
-        ctx.stroke();
+        return ctx.stroke();
       };
 
-      LinearAxisView.prototype._draw_major_ticks = function(ctx) {
-        var coords, i, nx, ny, sx, sy, tin, tout, x, y, _i, _ref1, _ref2, _ref3, _ref4;
+      AxisView.prototype._draw_major_ticks = function(ctx) {
+        var coords, i, nx, ny, sx, sy, tin, tout, x, y, _i, _ref1, _ref2, _ref3, _ref4, _results;
         if (!this.major_tick_props.do_stroke) {
           return;
         }
@@ -22648,16 +22804,18 @@ define("sprintf", (function (global) {
         tin = this.mget('major_tick_in');
         tout = this.mget('major_tick_out');
         this.major_tick_props.set(ctx, this);
+        _results = [];
         for (i = _i = 0, _ref4 = sx.length; 0 <= _ref4 ? _i < _ref4 : _i > _ref4; i = 0 <= _ref4 ? ++_i : --_i) {
           ctx.beginPath();
           ctx.moveTo(Math.round(sx[i] + nx * tout), Math.round(sy[i] + ny * tout));
           ctx.lineTo(Math.round(sx[i] - nx * tin), Math.round(sy[i] - ny * tin));
-          ctx.stroke();
+          _results.push(ctx.stroke());
         }
+        return _results;
       };
 
-      LinearAxisView.prototype._draw_major_labels = function(ctx) {
-        var angle, coords, dim, i, labels, nx, ny, orient, side, standoff, sx, sy, x, y, _i, _ref1, _ref2, _ref3, _ref4;
+      AxisView.prototype._draw_major_labels = function(ctx) {
+        var angle, coords, dim, i, labels, nx, ny, orient, side, standoff, sx, sy, x, y, _i, _ref1, _ref2, _ref3, _ref4, _results;
         _ref1 = coords = this.mget('major_coords'), x = _ref1[0], y = _ref1[1];
         _ref2 = this.plot_view.map_to_screen(x, "data", y, "data"), sx = _ref2[0], sy = _ref2[1];
         _ref3 = this.mget('normals'), nx = _ref3[0], ny = _ref3[1];
@@ -22673,21 +22831,23 @@ define("sprintf", (function (global) {
         labels = this.formatter.format(coords[dim]);
         this.major_label_props.set(ctx, this);
         this._apply_location_heuristics(ctx, side, orient);
+        _results = [];
         for (i = _i = 0, _ref4 = sx.length; 0 <= _ref4 ? _i < _ref4 : _i > _ref4; i = 0 <= _ref4 ? ++_i : --_i) {
           if (angle) {
             ctx.translate(sx[i] + nx * standoff, sy[i] + ny * standoff);
             ctx.rotate(angle);
             ctx.fillText(labels[i], 0, 0);
             ctx.rotate(-angle);
-            ctx.translate(-sx[i] - nx * standoff, -sy[i] - ny * standoff);
+            _results.push(ctx.translate(-sx[i] - nx * standoff, -sy[i] - ny * standoff));
           } else {
-            ctx.fillText(labels[i], Math.round(sx[i] + nx * standoff), Math.round(sy[i] + ny * standoff));
+            _results.push(ctx.fillText(labels[i], Math.round(sx[i] + nx * standoff), Math.round(sy[i] + ny * standoff)));
           }
         }
+        return _results;
       };
 
-      LinearAxisView.prototype._draw_axis_label = function(ctx) {
-        var angle, label, nx, ny, orient, side, standoff, sx, sy, x, y, _ref1, _ref2, _ref3;
+      AxisView.prototype._draw_axis_label = function(ctx) {
+        var angle, i, label, nx, ny, orient, side, standoff, sx, sy, x, y, _i, _ref1, _ref2, _ref3, _ref4;
         label = this.mget('axis_label');
         if (label == null) {
           return;
@@ -22697,6 +22857,12 @@ define("sprintf", (function (global) {
         _ref3 = this.mget('normals'), nx = _ref3[0], ny = _ref3[1];
         side = this.mget('side');
         orient = 'parallel';
+        if (this.normal_offset !== 0) {
+          for (i = _i = 0, _ref4 = sx.length; 0 <= _ref4 ? _i < _ref4 : _i > _ref4; i = 0 <= _ref4 ? ++_i : --_i) {
+            sx[i] += nx * this.normal_offset;
+            sy[i] += ny * this.normal_offset;
+          }
+        }
         angle = _angle_lookup[side][orient];
         standoff = this._tick_extent() + this._tick_label_extent() + this.mget('axis_label_standoff');
         sx = (sx[0] + sx[sx.length - 1]) / 2;
@@ -22708,13 +22874,13 @@ define("sprintf", (function (global) {
           ctx.rotate(angle);
           ctx.fillText(label, 0, 0);
           ctx.rotate(-angle);
-          ctx.translate(-sx - nx * standoff, -sy - ny * standoff);
+          return ctx.translate(-sx - nx * standoff, -sy - ny * standoff);
         } else {
-          ctx.fillText(label, sx + nx * standoff, sy + ny * standoff);
+          return ctx.fillText(label, sx + nx * standoff, sy + ny * standoff);
         }
       };
 
-      LinearAxisView.prototype._apply_location_heuristics = function(ctx, side, orient) {
+      AxisView.prototype._apply_location_heuristics = function(ctx, side, orient) {
         var align, baseline;
         if (_.isString(orient)) {
           baseline = _baseline_lookup[side][orient];
@@ -22724,36 +22890,20 @@ define("sprintf", (function (global) {
           align = _align_lookup[side][orient];
         } else if (orient < 0) {
           baseline = 'middle';
-          if (side === 'top') {
-            align = 'right';
-          } else if (side === 'bottom') {
-            align = 'left';
-          } else if (side === 'left') {
-            align = 'right';
-          } else if (side === 'right') {
-            align = 'left';
-          }
+          align = _align_lookup_negative[side];
         } else if (orient > 0) {
           baseline = 'middle';
-          if (side === 'top') {
-            align = 'left';
-          } else if (side === 'bottom') {
-            align = 'right';
-          } else if (side === 'left') {
-            align = 'right';
-          } else if (side === 'right') {
-            align = 'left';
-          }
+          align = _align_lookup_positive[side];
         }
         ctx.textBaseline = baseline;
         return ctx.textAlign = align;
       };
 
-      LinearAxisView.prototype._tick_extent = function() {
+      AxisView.prototype._tick_extent = function() {
         return this.mget('major_tick_out');
       };
 
-      LinearAxisView.prototype._tick_label_extent = function() {
+      AxisView.prototype._tick_label_extent = function() {
         var angle, c, coords, dim, extent, factor, h, i, labels, orient, s, side, val, w, _i, _j, _ref1, _ref2;
         extent = 0;
         dim = this.mget('dimension');
@@ -22803,7 +22953,7 @@ define("sprintf", (function (global) {
         return extent;
       };
 
-      LinearAxisView.prototype._axis_label_extent = function() {
+      AxisView.prototype._axis_label_extent = function() {
         var angle, c, extent, h, orient, s, side, w;
         extent = 0;
         side = this.mget('side');
@@ -22826,7 +22976,7 @@ define("sprintf", (function (global) {
         return extent;
       };
 
-      LinearAxisView.prototype._padding_request = function() {
+      AxisView.prototype._padding_request = function() {
         var loc, padding, req, side, _ref1;
         req = {};
         side = this.mget('side');
@@ -22842,42 +22992,42 @@ define("sprintf", (function (global) {
         return req;
       };
 
-      return LinearAxisView;
+      return AxisView;
 
     })(PlotWidget);
-    LinearAxis = (function(_super) {
-      __extends(LinearAxis, _super);
+    Axis = (function(_super) {
+      __extends(Axis, _super);
 
-      function LinearAxis() {
-        _ref1 = LinearAxis.__super__.constructor.apply(this, arguments);
+      function Axis() {
+        _ref1 = Axis.__super__.constructor.apply(this, arguments);
         return _ref1;
       }
 
-      LinearAxis.prototype.default_view = LinearAxisView;
+      Axis.prototype.default_view = AxisView;
 
-      LinearAxis.prototype.type = 'LinearAxis';
+      Axis.prototype.type = 'Axis';
 
-      LinearAxis.prototype.initialize = function(attrs, options) {
-        LinearAxis.__super__.initialize.call(this, attrs, options);
+      Axis.prototype.initialize = function(attrs, options) {
+        Axis.__super__.initialize.call(this, attrs, options);
+        this.scale = options.scale;
         this.register_property('computed_bounds', this._bounds, false);
         this.add_dependencies('computed_bounds', this, ['bounds']);
         this.register_property('rule_coords', this._rule_coords, false);
         this.add_dependencies('rule_coords', this, ['computed_bounds', 'dimension', 'location']);
         this.register_property('major_coords', this._major_coords, false);
         this.add_dependencies('major_coords', this, ['computed_bounds', 'dimension', 'location']);
-        this.register_property('normals', this._normals, false);
+        this.register_property('normals', this._normals, true);
         this.add_dependencies('normals', this, ['computed_bounds', 'dimension', 'location']);
         this.register_property('side', this._side, false);
         this.add_dependencies('side', this, ['normals']);
-        this.register_property('padding_request', this._padding_request, false);
-        return this.scale = new ticking.BasicScale();
+        return this.register_property('padding_request', this._padding_request, false);
       };
 
-      LinearAxis.prototype.dinitialize = function(attrs, options) {
+      Axis.prototype.dinitialize = function(attrs, options) {
         return this.add_dependencies('computed_bounds', this.get_obj('plot'), ['x_range', 'y_range']);
       };
 
-      LinearAxis.prototype._bounds = function() {
+      Axis.prototype._bounds = function() {
         var end, i, j, range_bounds, ranges, start, user_bounds, _ref2;
         i = this.get('dimension');
         j = (i + 1) % 2;
@@ -22898,92 +23048,129 @@ define("sprintf", (function (global) {
         return [start, end];
       };
 
-      LinearAxis.prototype._rule_coords = function() {
-        var coords, cross_range, end, i, j, loc, range, range_max, range_min, ranges, start, xs, ys, _ref2, _ref3, _ref4;
+      Axis.prototype._rule_coords = function() {
+        var cend, coords, cross_range, cstart, end, i, j, loc, range, ranges, start, xs, ys, _ref2, _ref3;
         i = this.get('dimension');
         j = (i + 1) % 2;
         ranges = [this.get_obj('plot').get_obj('x_range'), this.get_obj('plot').get_obj('y_range')];
         range = ranges[i];
         cross_range = ranges[j];
         _ref2 = this.get('computed_bounds'), start = _ref2[0], end = _ref2[1];
-        xs = new Float64Array(2);
-        ys = new Float64Array(2);
+        xs = new Array(2);
+        ys = new Array(2);
         coords = [xs, ys];
+        cstart = cross_range.get('start');
+        cend = cross_range.get('end');
         loc = (_ref3 = this.get('location')) != null ? _ref3 : 'min';
         if (_.isString(loc)) {
           if (loc === 'left' || loc === 'bottom') {
-            loc = 'start';
+            if (cstart < cend) {
+              loc = 'start';
+            } else {
+              loc = 'end';
+            }
           } else if (loc === 'right' || loc === 'top') {
-            loc = 'end';
+            if (cstart < cend) {
+              loc = 'end';
+            } else {
+              loc = 'start';
+            }
           }
           loc = cross_range.get(loc);
         }
-        _ref4 = [range.get('min'), range.get('max')], range_min = _ref4[0], range_max = _ref4[1];
-        coords[i][0] = Math.max(start, range_min);
-        coords[i][1] = Math.min(end, range_max);
-        coords[j][0] = loc;
-        coords[j][1] = loc;
+        coords[i][0] = Math.max(start, range.get('min'));
+        coords[i][1] = Math.min(end, range.get('max'));
         if (coords[i][0] > coords[i][1]) {
           coords[i][0] = coords[i][1] = NaN;
         }
+        coords[j][0] = loc;
+        coords[j][1] = loc;
         return coords;
       };
 
-      LinearAxis.prototype._major_coords = function() {
-        var coords, cross_range, end, i, ii, j, loc, range, range_max, range_min, ranges, start, ticks, xs, ys, _i, _ref2, _ref3, _ref4, _ref5;
+      Axis.prototype._major_coords = function() {
+        var cend, coords, cross_range, cstart, end, i, ii, j, loc, range, range_max, range_min, ranges, start, ticks, xs, ys, _i, _j, _ref2, _ref3, _ref4, _ref5, _ref6;
         i = this.get('dimension');
         j = (i + 1) % 2;
         ranges = [this.get_obj('plot').get_obj('x_range'), this.get_obj('plot').get_obj('y_range')];
         range = ranges[i];
         cross_range = ranges[j];
         _ref2 = this.get('computed_bounds'), start = _ref2[0], end = _ref2[1];
-        ticks = this.scale.get_ticks(start, end);
+        ticks = this.scale.get_ticks(start, end, range, {});
+        cstart = cross_range.get('start');
+        cend = cross_range.get('end');
         loc = (_ref3 = this.get('location')) != null ? _ref3 : 'min';
         if (_.isString(loc)) {
           if (loc === 'left' || loc === 'bottom') {
-            loc = 'start';
+            if (cstart < cend) {
+              loc = 'start';
+            } else {
+              loc = 'end';
+            }
           } else if (loc === 'right' || loc === 'top') {
-            loc = 'end';
+            if (cstart < cend) {
+              loc = 'end';
+            } else {
+              loc = 'start';
+            }
           }
           loc = cross_range.get(loc);
         }
         xs = [];
         ys = [];
         coords = [xs, ys];
-        _ref4 = [range.get('min'), range.get('max')], range_min = _ref4[0], range_max = _ref4[1];
-        for (ii = _i = 0, _ref5 = ticks.length; 0 <= _ref5 ? _i < _ref5 : _i > _ref5; ii = 0 <= _ref5 ? ++_i : --_i) {
-          if (ticks[ii] < range_min || ticks[ii] > range_max) {
-            continue;
+        if (range.type === "FactorRange") {
+          for (ii = _i = 0, _ref4 = ticks.length; 0 <= _ref4 ? _i < _ref4 : _i > _ref4; ii = 0 <= _ref4 ? ++_i : --_i) {
+            coords[i].push(ticks[ii]);
+            coords[j].push(loc);
           }
-          coords[i].push(ticks[ii]);
-          coords[j].push(loc);
+        } else {
+          _ref5 = [range.get('min'), range.get('max')], range_min = _ref5[0], range_max = _ref5[1];
+          for (ii = _j = 0, _ref6 = ticks.length; 0 <= _ref6 ? _j < _ref6 : _j > _ref6; ii = 0 <= _ref6 ? ++_j : --_j) {
+            if (ticks[ii] < range_min || ticks[ii] > range_max) {
+              continue;
+            }
+            coords[i].push(ticks[ii]);
+            coords[j].push(loc);
+          }
         }
         return coords;
       };
 
-      LinearAxis.prototype._normals = function() {
-        var cend, cross_range, cstart, end, i, j, loc, normals, range, ranges, start, _ref2, _ref3;
+      Axis.prototype._normals = function() {
+        var cend, cross_range, cstart, end, i, idir, j, jdir, loc, normals, range, ranges, start, _ref2, _ref3;
         i = this.get('dimension');
         j = (i + 1) % 2;
         ranges = [this.get_obj('plot').get_obj('x_range'), this.get_obj('plot').get_obj('y_range')];
         range = ranges[i];
         cross_range = ranges[j];
         _ref2 = this.get('computed_bounds'), start = _ref2[0], end = _ref2[1];
-        loc = (_ref3 = this.get('location')) != null ? _ref3 : 'min';
         cstart = cross_range.get('start');
         cend = cross_range.get('end');
+        loc = (_ref3 = this.get('location')) != null ? _ref3 : 'min';
         normals = [0, 0];
         if (_.isString(loc)) {
-          normals[j] = (end - start) < 0 ? -1 : 1;
-          if (i === 0) {
-            if ((loc === 'max' && (cstart < cend)) || (loc === 'min' && (cstart > cend)) || loc === 'right' || loc === 'top') {
-              normals[j] *= -1;
+          if (start > end) {
+            idir = "flip";
+          } else {
+            idir = "norm";
+          }
+          if (cstart > cend) {
+            jdir = "flip";
+            if (loc === "left" || loc === "bottom") {
+              loc = "max";
+            } else if (loc === "top" || loc === "right") {
+              loc = "max";
             }
-          } else if (i === 1) {
-            if ((loc === 'min' && (cstart < cend)) || (loc === 'max' && (cstart > cend)) || loc === 'left' || loc === 'bottom') {
-              normals[j] *= -1;
+          } else {
+            jdir = "norm";
+            if (loc === "left" || loc === "bottom") {
+              loc = "min";
+            } else if (loc === "top" || loc === "right") {
+              loc = "max";
             }
           }
+          normals[j] = _normal_lookup[i][idir][jdir][loc];
         } else {
           if (i === 0) {
             if (Math.abs(loc - cstart) <= Math.abs(loc - cend)) {
@@ -23002,7 +23189,7 @@ define("sprintf", (function (global) {
         return normals;
       };
 
-      LinearAxis.prototype._side = function() {
+      Axis.prototype._side = function() {
         var n, side;
         n = this.get('normals');
         if (n[1] === -1) {
@@ -23017,7 +23204,7 @@ define("sprintf", (function (global) {
         return side;
       };
 
-      LinearAxis.prototype.display_defaults = function() {
+      Axis.prototype.display_defaults = function() {
         return {
           level: 'overlay',
           axis_line_color: 'black',
@@ -23057,9 +23244,66 @@ define("sprintf", (function (global) {
         };
       };
 
-      return LinearAxis;
+      return Axis;
 
     })(HasParent);
+    return {
+      "Model": Axis,
+      "View": AxisView
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=axis.js.map
+*/;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('renderer/guide/linear_axis',["underscore", "backbone", "common/ticking", "./axis"], function(_, Backbone, ticking, Axis) {
+    var LinearAxes, LinearAxis, LinearAxisView, _ref, _ref1, _ref2;
+    LinearAxisView = (function(_super) {
+      __extends(LinearAxisView, _super);
+
+      function LinearAxisView() {
+        _ref = LinearAxisView.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      LinearAxisView.prototype.initialize = function(options) {
+        options.formatter = new ticking.BasicTickFormatter();
+        return LinearAxisView.__super__.initialize.call(this, options);
+      };
+
+      return LinearAxisView;
+
+    })(Axis.View);
+    LinearAxis = (function(_super) {
+      __extends(LinearAxis, _super);
+
+      function LinearAxis() {
+        _ref1 = LinearAxis.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      LinearAxis.prototype.default_view = LinearAxisView;
+
+      LinearAxis.prototype.type = 'LinearAxis';
+
+      LinearAxis.prototype.initialize = function(attrs, options) {
+        options.scale = new ticking.BasicScale();
+        return LinearAxis.__super__.initialize.call(this, attrs, options);
+      };
+
+      LinearAxis.prototype.display_defaults = function() {
+        return LinearAxis.__super__.display_defaults.call(this);
+      };
+
+      return LinearAxis;
+
+    })(Axis.Model);
     LinearAxes = (function(_super) {
       __extends(LinearAxes, _super);
 
@@ -23089,7 +23333,112 @@ define("sprintf", (function (global) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('renderer/guide/datetime_axis',["backbone", "./linear_axis", "common/ticking"], function(Backbone, LinearAxis, ticking) {
+  define('renderer/guide/categorical_axis',["backbone", "./axis", "common/ticking", "range/factor_range"], function(Backbone, Axis, ticking, FactorRange) {
+    var CategoricalAxes, CategoricalAxis, CategoricalAxisView, _CategoricalFormatter, _CategoricalScale, _ref, _ref1, _ref2;
+    _CategoricalFormatter = (function() {
+      function _CategoricalFormatter() {}
+
+      _CategoricalFormatter.prototype.format = function(ticks) {
+        return ticks;
+      };
+
+      return _CategoricalFormatter;
+
+    })();
+    _CategoricalScale = (function() {
+      function _CategoricalScale() {}
+
+      _CategoricalScale.prototype.get_ticks = function(start, end, range, _arg) {
+        var desired_n_ticks;
+        desired_n_ticks = _arg.desired_n_ticks;
+        return range.get("factors");
+      };
+
+      return _CategoricalScale;
+
+    })();
+    CategoricalAxisView = (function(_super) {
+      __extends(CategoricalAxisView, _super);
+
+      function CategoricalAxisView() {
+        _ref = CategoricalAxisView.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      CategoricalAxisView.prototype.initialize = function(attrs, options) {
+        CategoricalAxisView.__super__.initialize.call(this, attrs, options);
+        return this.formatter = new _CategoricalFormatter();
+      };
+
+      return CategoricalAxisView;
+
+    })(Axis.View);
+    CategoricalAxis = (function(_super) {
+      __extends(CategoricalAxis, _super);
+
+      function CategoricalAxis() {
+        _ref1 = CategoricalAxis.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      CategoricalAxis.prototype.default_view = CategoricalAxisView;
+
+      CategoricalAxis.prototype.type = 'CategoricalAxis';
+
+      CategoricalAxis.prototype.initialize = function(attrs, options) {
+        options.scale = new _CategoricalScale();
+        return CategoricalAxis.__super__.initialize.call(this, attrs, options);
+      };
+
+      CategoricalAxis.prototype._bounds = function() {
+        var i, range_bounds, ranges, user_bounds, _ref2;
+        i = this.get('dimension');
+        ranges = [this.get_obj('plot').get_obj('x_range'), this.get_obj('plot').get_obj('y_range')];
+        user_bounds = (_ref2 = this.get('bounds')) != null ? _ref2 : 'auto';
+        if (user_bounds !== 'auto') {
+          console.log("Categorical Axes only support user_bounds='auto', ignoring");
+        }
+        range_bounds = [ranges[i].get('min'), ranges[i].get('max')];
+        return range_bounds;
+      };
+
+      CategoricalAxis.prototype.display_defaults = function() {
+        return CategoricalAxis.__super__.display_defaults.call(this);
+      };
+
+      return CategoricalAxis;
+
+    })(Axis.Model);
+    CategoricalAxes = (function(_super) {
+      __extends(CategoricalAxes, _super);
+
+      function CategoricalAxes() {
+        _ref2 = CategoricalAxes.__super__.constructor.apply(this, arguments);
+        return _ref2;
+      }
+
+      CategoricalAxes.prototype.model = CategoricalAxis;
+
+      return CategoricalAxes;
+
+    })(Backbone.Collection);
+    return {
+      "Model": CategoricalAxis,
+      "Collection": new CategoricalAxes(),
+      "View": CategoricalAxisView
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=categorical_axis.js.map
+*/;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('renderer/guide/datetime_axis',["backbone", "./axis", "common/ticking"], function(Backbone, Axis, ticking) {
     var DatetimeAxes, DatetimeAxis, DatetimeAxisView, _ref, _ref1, _ref2;
     DatetimeAxisView = (function(_super) {
       __extends(DatetimeAxisView, _super);
@@ -23099,14 +23448,14 @@ define("sprintf", (function (global) {
         return _ref;
       }
 
-      DatetimeAxisView.prototype.initialize = function(attrs, options) {
-        DatetimeAxisView.__super__.initialize.call(this, attrs, options);
-        return this.formatter = new ticking.DatetimeFormatter();
+      DatetimeAxisView.prototype.initialize = function(options) {
+        options.formatter = new ticking.DatetimeFormatter();
+        return DatetimeAxisView.__super__.initialize.call(this, options);
       };
 
       return DatetimeAxisView;
 
-    })(LinearAxis.View);
+    })(Axis.View);
     DatetimeAxis = (function(_super) {
       __extends(DatetimeAxis, _super);
 
@@ -23120,13 +23469,17 @@ define("sprintf", (function (global) {
       DatetimeAxis.prototype.type = 'DatetimeAxis';
 
       DatetimeAxis.prototype.initialize = function(attrs, options) {
-        DatetimeAxis.__super__.initialize.call(this, attrs, options);
-        return this.scale = new ticking.DatetimeScale();
+        options.scale = new ticking.DatetimeScale();
+        return DatetimeAxis.__super__.initialize.call(this, attrs, options);
+      };
+
+      DatetimeAxis.prototype.display_defaults = function() {
+        return DatetimeAxis.__super__.display_defaults.call(this);
       };
 
       return DatetimeAxis;
 
-    })(LinearAxis.Model);
+    })(Axis.Model);
     DatetimeAxes = (function(_super) {
       __extends(DatetimeAxes, _super);
 
@@ -23274,7 +23627,7 @@ define("sprintf", (function (global) {
         tmp = Math.min(start, end);
         end = Math.max(start, end);
         start = tmp;
-        ticks = this.get('scale').get_ticks(start, end);
+        ticks = this.get('scale').get_ticks(start, end, range, {});
         min = range.get('min');
         max = range.get('max');
         cmin = cross_range.get('min');
@@ -23795,6 +24148,7 @@ define("sprintf", (function (global) {
       __extends(RemoteDataSource, _super);
 
       function RemoteDataSource() {
+        this.heatmap_update = __bind(this.heatmap_update, this);
         this.line1d_update = __bind(this.line1d_update, this);
         this.initialize = __bind(this.initialize, this);
         _ref = RemoteDataSource.__super__.constructor.apply(this, arguments);
@@ -23808,7 +24162,7 @@ define("sprintf", (function (global) {
         return this.callbacks = {};
       };
 
-      RemoteDataSource.prototype.stoplistening_for_line1d_updates = function(column_data_source) {
+      RemoteDataSource.prototype.stoplistening_for_updates = function(column_data_source) {
         var entry, _i, _len, _ref1, _results;
         if (this.callbacks[column_data_source.get('id')]) {
           _ref1 = this.callbacks[column_data_source.get('id')];
@@ -23824,7 +24178,7 @@ define("sprintf", (function (global) {
       RemoteDataSource.prototype.listen_for_line1d_updates = function(column_data_source, domain_range, screen_range, primary_column, domain_name, columns) {
         var callback, throttle,
           _this = this;
-        this.stoplistening_for_line1d_updates(column_data_source);
+        this.stoplistening_for_updates(column_data_source);
         this.line1d_update(column_data_source, domain_range, screen_range, primary_column, domain_name, columns);
         throttle = _.throttle(this.line1d_update, 300);
         callback = function() {
@@ -23837,6 +24191,7 @@ define("sprintf", (function (global) {
 
       RemoteDataSource.prototype.line1d_update = function(column_data_source, domain_range, screen_range, primary_column, domain_name, columns) {
         var data_url, domain_limit, domain_resolution, owner_username, params, prefix, url;
+        console.log('calling update');
         data_url = this.get('data_url');
         owner_username = this.get('owner_username');
         prefix = this.base().Config.prefix;
@@ -23862,6 +24217,8 @@ define("sprintf", (function (global) {
               domain_range.set({
                 start: data.domain_limit[0],
                 end: data.domain_limit[1]
+              }, {
+                silent: true
               });
               console.log('setting range', data.domain_limit);
             }
@@ -23870,6 +24227,57 @@ define("sprintf", (function (global) {
           },
           data: {
             downsample_function: 'line1d',
+            downsample_parameters: params
+          }
+        });
+      };
+
+      RemoteDataSource.prototype.listen_for_heatmap_updates = function(column_data_source, x_data_range, y_data_range, global_x_range, global_y_range, x_screen_range, y_screen_range) {
+        var callback, range, throttle, _i, _len, _ref1,
+          _this = this;
+        this.stoplistening_for_updates(column_data_source);
+        this.heatmap_update(column_data_source, x_data_range, y_data_range, global_x_range, global_y_range, x_screen_range, y_screen_range);
+        throttle = _.throttle(this.heatmap_update, 300);
+        callback = function() {
+          return throttle(column_data_source, x_data_range, y_data_range, global_x_range, global_y_range, x_screen_range, y_screen_range);
+        };
+        this.callbacks[column_data_source.get('id')] = [];
+        _ref1 = [x_data_range, y_data_range, x_screen_range, y_screen_range];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          range = _ref1[_i];
+          this.listenTo(range, 'change', callback);
+          this.callbacks[column_data_source.get('id')].push([range, 'change', callback]);
+        }
+        return null;
+      };
+
+      RemoteDataSource.prototype.heatmap_update = function(column_data_source, x_data_range, y_data_range, global_x_range, global_y_range, x_screen_range, y_screen_range) {
+        var data_url, owner_username, params, prefix, url, x_bounds, x_resolution, y_bounds, y_resolution;
+        column_data_source.set('data', this.get('data'));
+        data_url = this.get('data_url');
+        owner_username = this.get('owner_username');
+        prefix = this.base().Config.prefix;
+        url = "" + prefix + "/bokeh/data2/" + owner_username + data_url;
+        x_resolution = x_screen_range.get('end') - x_screen_range.get('start');
+        y_resolution = y_screen_range.get('end') - y_screen_range.get('start');
+        x_bounds = x_data_range.get('start') - x_data_range.get('end');
+        y_bounds = y_data_range.get('start') - y_data_range.get('end');
+        params = [global_x_range, global_y_range, x_bounds, y_bounds, x_resolution, y_resolution];
+        params = JSON.stringify(params);
+        return $.ajax({
+          dataType: 'json',
+          url: url,
+          xhrField: {
+            withCredentials: true
+          },
+          success: function(data) {
+            var new_data;
+            new_data = _.copy(column_data_source.get('data'));
+            new_data['image'] = data.data;
+            return column_data_source.set('data', old_data);
+          },
+          data: {
+            downsample_function: 'heatmap',
             downsample_parameters: params
           }
         });
@@ -26600,7 +27008,7 @@ define('widget/pandas/pandas_pivot_template',[],function(){
 //@ sourceMappingURL=pandas_plot_source.js.map
 */;
 (function() {
-  define('common/base',["underscore", "require", "common/custom", "common/plot", "common/gmap_plot", "common/grid_plot", "common/plot_context", "range/range1d", "range/data_range1d", "range/factor_range", "range/data_factor_range", "renderer/glyph/glyph_factory", "renderer/guide/linear_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/annotation/legend", "renderer/overlay/box_selection", "source/column_data_source", "source/remote_data_source", "tool/pan_tool", "tool/wheel_zoom_tool", "tool/resize_tool", "tool/crosshair_tool", "tool/box_select_tool", "tool/data_range_box_select_tool", "tool/preview_save_tool", "tool/embed_tool", "tool/reset_tool", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source"], function(_, require) {
+  define('common/base',["underscore", "require", "common/custom", "common/plot", "common/gmap_plot", "common/grid_plot", "common/plot_context", "range/range1d", "range/data_range1d", "range/factor_range", "range/data_factor_range", "renderer/glyph/glyph_factory", "renderer/guide/linear_axis", "renderer/guide/categorical_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/annotation/legend", "renderer/overlay/box_selection", "source/column_data_source", "source/remote_data_source", "tool/pan_tool", "tool/wheel_zoom_tool", "tool/resize_tool", "tool/crosshair_tool", "tool/box_select_tool", "tool/data_range_box_select_tool", "tool/preview_save_tool", "tool/embed_tool", "tool/reset_tool", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source"], function(_, require) {
     var Collections, Config, locations, mod_cache;
     require("common/custom").monkey_patch();
     Config = {
@@ -26619,6 +27027,7 @@ define('widget/pandas/pandas_pivot_template',[],function(){
       DataFactorRange: 'range/data_factor_range',
       Glyph: 'renderer/glyph/glyph_factory',
       LinearAxis: 'renderer/guide/linear_axis',
+      CategoricalAxis: 'renderer/guide/categorical_axis',
       DatetimeAxis: 'renderer/guide/datetime_axis',
       Grid: 'renderer/guide/grid',
       Legend: 'renderer/annotation/legend',
@@ -26846,7 +27255,7 @@ define('widget/pandas/pandas_pivot_template',[],function(){
 //@ sourceMappingURL=box_zoom_tool.js.map
 */;
 (function() {
-  define('common/plotting',["underscore", "jquery", "./plot", "range/data_range1d", "range/range1d", "renderer/annotation/legend", "renderer/glyph/glyph_factory", "renderer/guide/linear_axis", "renderer/guide/grid", "renderer/overlay/box_selection", "source/column_data_source", "tool/box_select_tool", "tool/box_zoom_tool", "tool/pan_tool", "tool/preview_save_tool", "tool/resize_tool", "tool/wheel_zoom_tool", "tool/reset_tool", "renderer/guide/datetime_axis"], function(_, $, Plot, DataRange1d, Range1d, Legend, GlyphFactory, LinearAxis, Grid, BoxSelection, ColumnDataSource, BoxSelectTool, BoxZoomTool, PanTool, PreviewSaveTool, ResizeTool, WheelZoomTool, ResetTool, DatetimeAxis) {
+  define('common/plotting',["underscore", "jquery", "./plot", "range/data_range1d", "range/factor_range", "range/range1d", "renderer/annotation/legend", "renderer/glyph/glyph_factory", "renderer/guide/categorical_axis", "renderer/guide/linear_axis", "renderer/guide/grid", "renderer/overlay/box_selection", "source/column_data_source", "tool/box_select_tool", "tool/box_zoom_tool", "tool/pan_tool", "tool/preview_save_tool", "tool/resize_tool", "tool/wheel_zoom_tool", "tool/reset_tool", "renderer/guide/datetime_axis"], function(_, $, Plot, DataRange1d, FactorRange, Range1d, Legend, GlyphFactory, CategoricalAxis, LinearAxis, Grid, BoxSelection, ColumnDataSource, BoxSelectTool, BoxZoomTool, PanTool, PreviewSaveTool, ResizeTool, WheelZoomTool, ResetTool, DatetimeAxis) {
     var add_axes, add_grids, add_legend, add_tools, create_glyphs, create_range, create_sources, make_plot, show;
     create_sources = function(data) {
       var d, sources, _i, _len;
@@ -26883,13 +27292,19 @@ define('widget/pandas/pandas_pivot_template',[],function(){
             return _results;
           })()
         });
-      } else if (range instanceof Range1d.Model) {
+      } else if ((range instanceof Range1d.Model) || (range instanceof FactorRange.Model)) {
         return range;
       } else {
-        return Range1d.Collection.create({
-          start: range[0],
-          end: range[1]
-        });
+        if (typeof range[0] === "string") {
+          return FactorRange.Collection.create({
+            factors: range
+          });
+        } else {
+          return Range1d.Collection.create({
+            start: range[0],
+            end: range[1]
+          });
+        }
       }
     };
     create_glyphs = function(plot, glyphspecs, sources, nonselection_glyphspecs) {
@@ -26940,8 +27355,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
       }
       return glyphs;
     };
-    add_axes = function(plot, xaxes, yaxes) {
-      var a, axes, axis, loc, _i, _j, _k, _len, _len1, _len2, _ref;
+    add_axes = function(plot, xaxes, yaxes, xdr, ydr) {
+      var a, axes, axis, loc, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref;
       axes = [];
       if (xaxes) {
         if (xaxes === true) {
@@ -26963,9 +27378,21 @@ define('widget/pandas/pandas_pivot_template',[],function(){
             });
             axes.push(axis);
           }
-        } else {
+        } else if (xdr.type === "FactorRange") {
           for (_j = 0, _len1 = xaxes.length; _j < _len1; _j++) {
             loc = xaxes[_j];
+            axis = CategoricalAxis.Collection.create({
+              dimension: 0,
+              axis_label: 'x',
+              location: loc,
+              parent: plot.ref(),
+              plot: plot.ref()
+            });
+            axes.push(axis);
+          }
+        } else {
+          for (_k = 0, _len2 = xaxes.length; _k < _len2; _k++) {
+            loc = xaxes[_k];
             axis = LinearAxis.Collection.create({
               dimension: 0,
               axis_label: 'x',
@@ -26984,23 +27411,37 @@ define('widget/pandas/pandas_pivot_template',[],function(){
         if (!_.isArray(yaxes)) {
           yaxes = [yaxes];
         }
-        for (_k = 0, _len2 = yaxes.length; _k < _len2; _k++) {
-          loc = yaxes[_k];
-          axis = LinearAxis.Collection.create({
-            dimension: 1,
-            axis_label: 'y',
-            location: loc,
-            parent: plot.ref(),
-            plot: plot.ref()
-          });
-          axes.push(axis);
+        if (ydr.type === "FactorRange") {
+          for (_l = 0, _len3 = xaxes.length; _l < _len3; _l++) {
+            loc = xaxes[_l];
+            axis = CategoricalAxis.Collection.create({
+              dimension: 1,
+              axis_label: 'y',
+              location: loc,
+              parent: plot.ref(),
+              plot: plot.ref()
+            });
+            axes.push(axis);
+          }
+        } else {
+          for (_m = 0, _len4 = yaxes.length; _m < _len4; _m++) {
+            loc = yaxes[_m];
+            axis = LinearAxis.Collection.create({
+              dimension: 1,
+              axis_label: 'y',
+              location: loc,
+              parent: plot.ref(),
+              plot: plot.ref()
+            });
+            axes.push(axis);
+          }
         }
       }
       return plot.add_renderers((function() {
-        var _l, _len3, _results;
+        var _len5, _n, _results;
         _results = [];
-        for (_l = 0, _len3 = axes.length; _l < _len3; _l++) {
-          a = axes[_l];
+        for (_n = 0, _len5 = axes.length; _n < _len5; _n++) {
+          a = axes[_n];
           _results.push(a.ref());
         }
         return _results;
@@ -27178,7 +27619,7 @@ define('widget/pandas/pandas_pivot_template',[],function(){
         }
         return _results;
       })());
-      add_axes(plot, xaxes, yaxes);
+      add_axes(plot, xaxes, yaxes, xdr, ydr);
       add_grids(plot, xgrid, ygrid, xaxes === 'datetime');
       add_tools(plot, tools, glyphs, xdr, ydr);
       add_legend(plot, legend, glyphs);
@@ -28282,7 +28723,7 @@ define('server/usercontext/wrappertemplate',[],function(){
 //@ sourceMappingURL=serverrun.js.map
 */;
 (function() {
-  define('main',['require','exports','module','common/base','common/base','common/gmap_plot','common/grid_plot','common/has_parent','common/has_properties','common/plot','common/plotting','common/affine','common/build_views','common/bulk_save','common/continuum_view','common/grid_view_state','common/load_models','common/plot_context','common/plot_widget','common/png_view','common/random','common/safebind','common/svg_colors','common/ticking','common/view_state','mapper/1d/linear_mapper','mapper/2d/grid_mapper','mapper/color/linear_color_mapper','palettes/palettes','renderer/annotation/legend','renderer/glyph/glyph','renderer/glyph/glyph_factory','renderer/guide/datetime_axis','renderer/guide/grid','renderer/guide/linear_axis','renderer/overlay/box_selection','renderer/properties','server/embed_core','server/serverrun','server/serverutils','source/column_data_source','source/remote_data_source','tool/box_select_tool','tool/data_range_box_select_tool','tool/embed_tool','tool/pan_tool','tool/preview_save_tool','tool/reset_tool','tool/resize_tool','tool/crosshair_tool','tool/wheel_zoom_tool','tool/box_zoom_tool','widget/data_slider','server/serverrun'],function(require, exports, module) {
+  define('main',['require','exports','module','common/base','common/base','common/gmap_plot','common/grid_plot','common/has_parent','common/has_properties','common/plot','common/plotting','common/affine','common/build_views','common/bulk_save','common/continuum_view','common/grid_view_state','common/load_models','common/plot_context','common/plot_widget','common/png_view','common/random','common/safebind','common/svg_colors','common/ticking','common/view_state','mapper/1d/linear_mapper','mapper/1d/categorical_mapper','mapper/2d/grid_mapper','mapper/color/linear_color_mapper','palettes/palettes','renderer/annotation/legend','renderer/glyph/glyph','renderer/glyph/glyph_factory','renderer/guide/datetime_axis','renderer/guide/grid','renderer/guide/linear_axis','renderer/guide/categorical_axis','renderer/overlay/box_selection','renderer/properties','server/embed_core','server/serverrun','server/serverutils','source/column_data_source','source/remote_data_source','tool/box_select_tool','tool/data_range_box_select_tool','tool/embed_tool','tool/pan_tool','tool/preview_save_tool','tool/reset_tool','tool/resize_tool','tool/crosshair_tool','tool/wheel_zoom_tool','tool/box_zoom_tool','widget/data_slider','server/serverrun'],function(require, exports, module) {
     var Bokeh, glyph_factory;
     if (!window.Float64Array) {
       console.warn("Float64Array is not supported. Using generic Array instead.");
@@ -28313,6 +28754,7 @@ define('server/usercontext/wrappertemplate',[],function(){
     Bokeh.ticking = require("common/ticking");
     Bokeh.ViewState = require("common/view_state");
     Bokeh.LinearMapper = require("mapper/1d/linear_mapper");
+    Bokeh.CategoricalMapper = require("mapper/1d/categorical_mapper");
     Bokeh.GridMapper = require("mapper/2d/grid_mapper");
     Bokeh.LinearColorMapper = require("mapper/color/linear_color_mapper");
     Bokeh.Palettes = require("palettes/palettes");
@@ -28354,6 +28796,7 @@ define('server/usercontext/wrappertemplate',[],function(){
     Bokeh.DatetimeAxis = require("renderer/guide/datetime_axis");
     Bokeh.Grid = require("renderer/guide/grid");
     Bokeh.LinearAxis = require("renderer/guide/linear_axis");
+    Bokeh.CategoricalAxis = require("renderer/guide/categorical_axis");
     Bokeh.BoxSelection = require("renderer/overlay/box_selection");
     Bokeh.Properties = require("renderer/properties");
     Bokeh.embed_core = require("server/embed_core");
