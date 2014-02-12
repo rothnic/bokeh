@@ -40,6 +40,7 @@ define [
 
     line1d_update : (column_data_source, domain_range, screen_range,
                      primary_column, domain_name, columns) =>
+      console.log('calling update')
       data_url = @get('data_url')
       owner_username = @get('owner_username')
       prefix = @base().Config.prefix
@@ -61,8 +62,10 @@ define [
         success : (data) ->
           if domain_limit == 'auto'
             domain_range.set(
-              start : data.domain_limit[0],
-              end : data.domain_limit[1]
+                start : data.domain_limit[0],
+                end : data.domain_limit[1]
+              ,
+                silent : true
             )
             console.log('setting range', data.domain_limit)
           column_data_source.set('data', data.data)
