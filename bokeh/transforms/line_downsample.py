@@ -23,7 +23,7 @@ def downsample(data,
     """
     #sort data
     indexes = np.argsort(data[domain_column])
-    data = data[indexes, :]
+    data = data[indexes]
     
     #truncate data based on domain_limits
     domain = data[domain_column]
