@@ -113,6 +113,8 @@ def service_exit():
 
 def start_app(verbose=False):
     global http_server
+    from .flask_gzip import Gzip
+    Gzip(app)
     http_server = make_server('', PORT, app)
     start_services()
     print("\nStarting Bokeh plot server on port %d..." % PORT)
