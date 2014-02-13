@@ -34,6 +34,7 @@ define [
   "widget/pandas/ipython_remote_data",
   "widget/pandas/pandas_pivot_table",
   "widget/pandas/pandas_plot_source",
+  "app/app",
 ], (_, require) ->
 
   # add some useful functions to underscore
@@ -82,7 +83,7 @@ define [
     PandasPivotTable:       'widget/pandas/pandas_pivot_table'
     PandasPlotSource:       'widget/pandas/pandas_plot_source'
     MouseSlicer :           'tool/mouse_slicer'
-
+    App :                   "app/app"
   mod_cache = {}
 
   Collections = (typename) ->

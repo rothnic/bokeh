@@ -1,0 +1,13 @@
+<table>
+  <tr>
+    <td>
+      <div style="height:300px; width:100px;">
+        <div class="app_slider" style="height:100%">
+        </div>
+      </div>
+    </td>
+    <td>
+      <div class="image_plot"></div>
+    </td>
+  </tr>
+</table>

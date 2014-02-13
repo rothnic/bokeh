@@ -20,7 +20,7 @@ import socket
 from .app import bokeh_app
 from . import wsmanager
 #import objects so that we can resolve them
-from .. import protocol, objects, glyphs
+from .. import protocol, objects, glyphs, appobject
 from .models import user, docs
 from .models import convenience as mconv
 import os
