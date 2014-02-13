@@ -112,9 +112,12 @@ define [
       global_dh = @get('data').global_dh[0]
       global_offset_x = @get('data').global_offset_x[0]
       global_offset_y = @get('data').global_offset_y[0]
+      index_slice = @get('index_slice')
+      data_slice = @get('data_slice')
       params = [global_dw, global_dh,
         global_offset_x, global_offset_y,
-        x_bounds, y_bounds, x_resolution, y_resolution]
+        x_bounds, y_bounds, x_resolution,
+        y_resolution, index_slice, data_slice]
       params = JSON.stringify(params)
       console.log(y_bounds)
       $.ajax(

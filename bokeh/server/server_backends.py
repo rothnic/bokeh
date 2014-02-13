@@ -400,8 +400,15 @@ class HDF5DataBackend(AbstractDataBackend):
                           downsample_function, downsample_parameters):
         dataset = self.client[data_url].node
         (global_dw, global_dh, global_offset_x, global_offset_y,
-         x_bounds, y_bounds, x_resolution, y_resolution) = downsample_parameters
-        print downsample_parameters
+         x_bounds, y_bounds, x_resolution, y_resolution,
+         index_slice, data_slice) = downsample_parameters
+        
+        if data_slice:
+            #not supported for z yet...
+            pass
+        elif index_slice:
+            index_slices = [slice(None) if x is None else x for x in index_slice]
+            dataset = dataset[tuple(index_slices)]
         image_x_axis = np.linspace(0, 
                                    global_dw,
                                    dataset.shape[1])

@@ -2,12 +2,13 @@ import numpy as np
 from bokeh.plotting import *
 from bokeh.objects import Range1d
 
-N = 256
+N = 100
 
 x = np.linspace(0, 10, N)
 y = np.linspace(0, 10, N)
-xx, yy = np.meshgrid(x, y)
-d = np.sin(xx)*np.cos(yy)
+z = np.linspace(0, 20, N)
+xx, yy, zz = np.meshgrid(x, y, z)
+d = np.sin(xx)*np.cos(yy + zz)
 
 output_server("image")
 

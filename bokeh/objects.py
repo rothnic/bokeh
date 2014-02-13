@@ -409,6 +409,8 @@ class RemoteDataSource(DataSource):
     data_url = String()
     owner_username = String()
     data = Dict()
+    index_slice = List()
+    data_slice = List()
 
 class ColumnDataSource(DataSource):
     # Maps names of columns to sequences or arrays
