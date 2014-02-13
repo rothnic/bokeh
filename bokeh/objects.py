@@ -411,7 +411,8 @@ class RemoteDataSource(DataSource):
     data = Dict()
     index_slice = List()
     data_slice = List()
-
+    transpose = Bool(False)
+    
 class ColumnDataSource(DataSource):
     # Maps names of columns to sequences or arrays
     data = Dict()
@@ -872,3 +873,5 @@ class PlotList(PlotContext):
     # just like plot context, except plot context has special meaning
     # everywhere, so plotlist is the generic one
     pass
+
+

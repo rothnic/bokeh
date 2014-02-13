@@ -5,5 +5,8 @@ from .properties import (HasProps, MetaHasProps, Any, Dict, Enum,
 
 class App(PlotObject):
     remote_data_source = Instance(RemoteDataSource, has_ref=True)
+    vert_source = Instance(RemoteDataSource, has_ref=True)
+    horiz_source = Instance(RemoteDataSource, has_ref=True)        
     image_plot = Instance(Plot, has_ref=True)
-    
+    vert_plot = Instance(Plot, has_ref=True)
+    horiz_plot = Instance(Plot, has_ref=True)

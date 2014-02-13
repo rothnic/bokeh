@@ -401,7 +401,7 @@ class HDF5DataBackend(AbstractDataBackend):
         dataset = self.client[data_url].node
         (global_dw, global_dh, global_offset_x, global_offset_y,
          x_bounds, y_bounds, x_resolution, y_resolution,
-         index_slice, data_slice) = downsample_parameters
+         index_slice, data_slice, transpose) = downsample_parameters
         
         if data_slice:
             #not supported for z yet...
@@ -419,6 +419,9 @@ class HDF5DataBackend(AbstractDataBackend):
                                              x_bounds, y_bounds, x_resolution,
                                              y_resolution)
         output = {}
+        if transpose:
+            print 'transpose'
+            result['data'] = result['data'].T
         output['image'] = [result['data']]
         output['x'] = [global_offset_x + result['offset_x']]
         output['y'] = [global_offset_y + result['offset_y']]

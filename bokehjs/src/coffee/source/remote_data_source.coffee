@@ -122,7 +122,9 @@ define [
       params = [global_dw, global_dh,
         global_offset_x, global_offset_y,
         x_bounds, y_bounds, x_resolution,
-        y_resolution, index_slice, data_slice]
+        y_resolution, index_slice, data_slice,
+        @get('transpose')
+      ]
       params = JSON.stringify(params)
       console.log(y_bounds)
       $.ajax(
