@@ -24101,7 +24101,7 @@ define("sprintf", (function (global) {
         this.listenTo(this, 'change:index_slice', callback);
         this.callbacks[column_data_source.get('id')].push([this, 'change:index_slice', callback]);
         this.listenTo(this, 'change:data_slice', callback);
-        this.callbacks[column_data_source.get('id')].push([this, 'change:dat_slice', callback]);
+        this.callbacks[column_data_source.get('id')].push([this, 'change:data_slice', callback]);
         return null;
       };
 
@@ -24121,7 +24121,7 @@ define("sprintf", (function (global) {
         global_offset_y = this.get('data').global_offset_y[0];
         index_slice = this.get('index_slice');
         data_slice = this.get('data_slice');
-        params = [global_dw, global_dh, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice];
+        params = [global_dw, global_dh, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice, this.get('transpose')];
         params = JSON.stringify(params);
         console.log(y_bounds);
         return $.ajax({
@@ -26996,7 +26996,7 @@ define('app/app_template',[],function(){
       return _safe(result);
     };
     (function() {
-      _print(_safe('<table>\n  <tr>\n    <td>\n      <div style="height:300px; width:100px;">\n        <div class="app_slider" style="height:100%">\n        </div>\n      </div>\n    </td>\n    <td>\n      <div class="image_plot"></div>\n    </td>\n  </tr>\n</table>\n'));
+      _print(_safe('<table>\n  <tbody>\n    <tr>\n      <td>\n        <div style="height:320px;width:50px;margin-top:40px">\n          <div class="app_slider" style="height:100%">\n          </div>\n        </div>\n      </td>\n      <td>\n        <div class="image_plot"></div>\n      </td>\n      <td>\n        <div style="height:320px;width:50px;margin-top:40px">\n          <div class="vert_slider" style="height:100%">\n          </div>\n        </div>\n      </td>\n      <td>\n        <div class="vert_plot"></div>\n      </td>\n    </tr>\n    <tr>\n      <td>\n      </td>\n      <td>\n        <div style="height:100px;width:510px;margin-left:40px">\n          <div class="horiz_slider" style="width:100%">\n          </div>\n        </div>\n      </td>\n      <td>\n      </td>\n      <td>\n      </td>\n    </tr>\n\n    </tr>\n      <td>\n      </td>\n      <td>\n        <div class="horiz_plot"></div>\n      </td>\n      <td>\n      </td>\n      <td>\n      </td>\n    </tr>\n  </tbody>\n</table>\n'));
     
     }).call(this);
     
@@ -28715,6 +28715,14 @@ $.widget( "ui.slider", $.ui.mouse, {
         this.plot_view = new this.plot.default_view({
           'model': this.plot
         });
+        this.vert_plot = this.mget_obj('vert_plot');
+        this.vert_plot_view = new this.plot.default_view({
+          'model': this.vert_plot
+        });
+        this.horiz_plot = this.mget_obj('horiz_plot');
+        this.horiz_plot_view = new this.plot.default_view({
+          'model': this.horiz_plot
+        });
         return this.render();
       };
 
@@ -28725,9 +28733,11 @@ $.widget( "ui.slider", $.ui.mouse, {
         this.$el.html('');
         this.$el.html(this.template());
         this.$(".image_plot").append(this.plot_view.$el);
+        this.$(".vert_plot").append(this.vert_plot_view.$el);
+        this.$(".horiz_plot").append(this.horiz_plot_view.$el);
         max = 42;
         min = 0;
-        return this.$el.find(".app_slider").slider({
+        this.$el.find(".app_slider").slider({
           orientation: "vertical",
           animate: "fast",
           step: (max - min) / 50.0,
@@ -28749,6 +28759,62 @@ $.widget( "ui.slider", $.ui.mouse, {
                 return _results;
               })();
               new_slice[2] = Math.round(ui.value);
+              return remote.set('index_slice', new_slice);
+            };
+          })(this)
+        });
+        max = 4095;
+        min = 0;
+        this.$el.find(".vert_slider").slider({
+          orientation: "vertical",
+          animate: "fast",
+          step: (max - min) / 50.0,
+          min: min,
+          max: max,
+          value: min,
+          slide: (function(_this) {
+            return function(event, ui) {
+              var current_slice, new_slice, remote, x;
+              remote = _this.mget_obj('horiz_source');
+              current_slice = remote.get('index_slice');
+              new_slice = (function() {
+                var _i, _len, _results;
+                _results = [];
+                for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+                  x = current_slice[_i];
+                  _results.push(x);
+                }
+                return _results;
+              })();
+              new_slice[0] = Math.round(ui.value);
+              return remote.set('index_slice', new_slice);
+            };
+          })(this)
+        });
+        max = 8191;
+        min = 0;
+        return this.$el.find(".horiz_slider").slider({
+          orientation: "horizontal",
+          animate: "fast",
+          step: (max - min) / 50.0,
+          min: min,
+          max: max,
+          value: min,
+          slide: (function(_this) {
+            return function(event, ui) {
+              var current_slice, new_slice, remote, x;
+              remote = _this.mget_obj('vert_source');
+              current_slice = remote.get('index_slice');
+              new_slice = (function() {
+                var _i, _len, _results;
+                _results = [];
+                for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+                  x = current_slice[_i];
+                  _results.push(x);
+                }
+                return _results;
+              })();
+              new_slice[1] = Math.round(ui.value);
               return remote.set('index_slice', new_slice);
             };
           })(this)
