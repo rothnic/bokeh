@@ -3,7 +3,7 @@ from bokeh.plotting import *
 from bokeh.objects import Range1d, MouseSlicer
 from bokeh.appobject import App
 
-output_server("remote2")
+output_server("remote_ocean_slider")
 #output_server("image2")
 source = RemoteDataSource(data_url="/defaultuser/oceantemperature/big.table/big", 
                           owner_username="defaultuser",
