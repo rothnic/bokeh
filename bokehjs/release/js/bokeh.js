@@ -24097,11 +24097,15 @@ define("sprintf", (function (global) {
           this.listenTo(range, 'change', callback);
           this.callbacks[column_data_source.get('id')].push([range, 'change', callback]);
         }
+        this.listenTo(this, 'change:index_slice', callback);
+        this.callbacks[column_data_source.get('id')].push([this, 'change:index_slice', callback]);
+        this.listenTo(this, 'change:data_slice', callback);
+        this.callbacks[column_data_source.get('id')].push([this, 'change:dat_slice', callback]);
         return null;
       };
 
       RemoteDataSource.prototype.heatmap_update = function(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range) {
-        var data_url, global_dh, global_dw, global_offset_x, global_offset_y, owner_username, params, prefix, url, x_bounds, x_resolution, y_bounds, y_resolution;
+        var data_slice, data_url, global_dh, global_dw, global_offset_x, global_offset_y, index_slice, owner_username, params, prefix, url, x_bounds, x_resolution, y_bounds, y_resolution;
         data_url = this.get('data_url');
         owner_username = this.get('owner_username');
         prefix = this.base().Config.prefix;
@@ -24114,7 +24118,9 @@ define("sprintf", (function (global) {
         global_dh = this.get('data').global_dh[0];
         global_offset_x = this.get('data').global_offset_x[0];
         global_offset_y = this.get('data').global_offset_y[0];
-        params = [global_dw, global_dh, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution];
+        index_slice = this.get('index_slice');
+        data_slice = this.get('data_slice');
+        params = [global_dw, global_dh, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice];
         params = JSON.stringify(params);
         console.log(y_bounds);
         return $.ajax({
@@ -25972,6 +25978,121 @@ define('modal',["jquery"], function($) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  define('tool/mouse_slicer',["underscore", "backbone", "./tool", "./event_generators"], function(_, Backbone, Tool, EventGenerators) {
+    var MouseSlicer, MouseSlicerView, MouseSlicers, OnePointWheelEventGenerator;
+    OnePointWheelEventGenerator = EventGenerators.OnePointWheelEventGenerator;
+    MouseSlicerView = (function(_super) {
+      __extends(MouseSlicerView, _super);
+
+      function MouseSlicerView() {
+        return MouseSlicerView.__super__.constructor.apply(this, arguments);
+      }
+
+      MouseSlicerView.prototype.initialize = function(options) {
+        return MouseSlicerView.__super__.initialize.call(this, options);
+      };
+
+      MouseSlicerView.prototype.eventGeneratorClass = OnePointWheelEventGenerator;
+
+      MouseSlicerView.prototype.evgen_options = {
+        buttonText: "MouseSlicer"
+      };
+
+      MouseSlicerView.prototype.tool_events = {
+        zoom: "_slice"
+      };
+
+      MouseSlicerView.prototype._slice = function(e) {
+        var current_slice, delta, max_val, new_slice, remote, slice_dimension, x;
+        delta = e.originalEvent.wheelDelta;
+        remote = this.mget_obj('remote_data_source');
+        if (!remote) {
+          return;
+        }
+        if (!remote.get('index_slice')) {
+          return;
+        }
+        slice_dimension = this.mget('slice_dimension');
+        current_slice = remote.get('index_slice')[slice_dimension];
+        if (delta > 0) {
+          max_val = this.mget('max_slice');
+          if (current_slice + 1 <= max_val) {
+            new_slice = (function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+                x = current_slice[_i];
+                _results.push(x);
+              }
+              return _results;
+            })();
+            new_slice[slice_dimension] = current_slice + 1;
+            remote.set('index_slice', new_slice);
+            console.log('setting', new_slice);
+          }
+        } else {
+          if (current_slice - 1 >= 0) {
+            new_slice = (function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+                x = current_slice[_i];
+                _results.push(x);
+              }
+              return _results;
+            })();
+            new_slice[slice_dimension] = current_slice - 1;
+            remote.set('index_slice', new_slice);
+            console.log('setting', new_slice);
+          }
+        }
+        return null;
+      };
+
+      return MouseSlicerView;
+
+    })(Tool.View);
+    MouseSlicer = (function(_super) {
+      __extends(MouseSlicer, _super);
+
+      function MouseSlicer() {
+        return MouseSlicer.__super__.constructor.apply(this, arguments);
+      }
+
+      MouseSlicer.prototype.default_view = MouseSlicerView;
+
+      MouseSlicer.prototype.type = "MouseSlicer";
+
+      return MouseSlicer;
+
+    })(Tool.Model);
+    MouseSlicers = (function(_super) {
+      __extends(MouseSlicers, _super);
+
+      function MouseSlicers() {
+        return MouseSlicers.__super__.constructor.apply(this, arguments);
+      }
+
+      MouseSlicers.prototype.model = MouseSlicer;
+
+      return MouseSlicers;
+
+    })(Backbone.Collection);
+    return {
+      "Model": MouseSlicer,
+      "Collection": new MouseSlicers(),
+      "View": MouseSlicerView
+    };
+  });
+
+}).call(this);
+
+//# sourceMappingURL=mouse_slicer.js.map
+;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   define('widget/data_slider',["common/plot_widget", "common/has_parent"], function(PlotWidget, HasParent) {
     var DataSlider, DataSliderView, DataSliders;
     DataSliderView = (function(_super) {
@@ -26853,7 +26974,7 @@ define('widget/pandas/pandas_pivot_template',[],function(){
 //# sourceMappingURL=pandas_plot_source.js.map
 ;
 (function() {
-  define('common/base',["underscore", "require", "common/custom", "common/plot", "common/gmap_plot", "common/grid_plot", "common/plot_context", "range/range1d", "range/data_range1d", "range/factor_range", "range/data_factor_range", "renderer/glyph/glyph_factory", "renderer/guide/linear_axis", "renderer/guide/categorical_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/annotation/legend", "renderer/overlay/box_selection", "source/column_data_source", "source/remote_data_source", "tool/pan_tool", "tool/wheel_zoom_tool", "tool/resize_tool", "tool/crosshair_tool", "tool/box_select_tool", "tool/data_range_box_select_tool", "tool/preview_save_tool", "tool/embed_tool", "tool/reset_tool", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source"], function(_, require) {
+  define('common/base',["underscore", "require", "common/custom", "common/plot", "common/gmap_plot", "common/grid_plot", "common/plot_context", "range/range1d", "range/data_range1d", "range/factor_range", "range/data_factor_range", "renderer/glyph/glyph_factory", "renderer/guide/linear_axis", "renderer/guide/categorical_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/annotation/legend", "renderer/overlay/box_selection", "source/column_data_source", "source/remote_data_source", "tool/pan_tool", "tool/wheel_zoom_tool", "tool/resize_tool", "tool/crosshair_tool", "tool/box_select_tool", "tool/data_range_box_select_tool", "tool/preview_save_tool", "tool/embed_tool", "tool/reset_tool", "tool/mouse_slicer", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source"], function(_, require) {
     var Collections, Config, locations, mod_cache;
     require("common/custom").monkey_patch();
     Config = {
@@ -26892,7 +27013,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
       DataSlider: 'widget/data_slider',
       IPythonRemoteData: 'widget/pandas/ipython_remote_data',
       PandasPivotTable: 'widget/pandas/pandas_pivot_table',
-      PandasPlotSource: 'widget/pandas/pandas_plot_source'
+      PandasPlotSource: 'widget/pandas/pandas_plot_source',
+      MouseSlicer: 'tool/mouse_slicer'
     };
     mod_cache = {};
     Collections = function(typename) {
