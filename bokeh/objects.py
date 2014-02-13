@@ -830,6 +830,11 @@ class BoxSelectTool(PlotObject):
     renderers = List(has_ref=True)
     select_every_mousemove = Bool(True)
 
+class MouseSlicer(PlotObject):
+    remote_data_source = Instance(RemoteDataSource, has_ref=True)
+    max_slice = Int(0)
+    slice_dimension = Int(0)
+    
 class BoxSelectionOverlay(PlotObject):
     __view_model__ = 'BoxSelection'
     tool = Instance(has_ref=True)

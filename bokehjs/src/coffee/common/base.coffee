@@ -29,6 +29,7 @@ define [
   "tool/preview_save_tool",
   "tool/embed_tool",
   "tool/reset_tool",
+  "tool/mouse_slicer",
   "widget/data_slider",
   "widget/pandas/ipython_remote_data",
   "widget/pandas/pandas_pivot_table",
@@ -80,6 +81,7 @@ define [
     IPythonRemoteData:      'widget/pandas/ipython_remote_data'
     PandasPivotTable:       'widget/pandas/pandas_pivot_table'
     PandasPlotSource:       'widget/pandas/pandas_plot_source'
+    MouseSlicer :           'tool/mouse_slicer'
 
   mod_cache = {}
 

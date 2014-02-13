@@ -94,7 +94,12 @@ define [
       for range in [x_data_range, y_data_range, x_screen_range, y_screen_range]
         @listenTo(range, 'change', callback)
         @callbacks[column_data_source.get('id')].push([range, 'change', callback])
-
+      @listenTo(this, 'change:index_slice', callback)
+      @callbacks[column_data_source.get('id')].push(
+        [this, 'change:index_slice', callback])
+      @listenTo(this, 'change:data_slice', callback)
+      @callbacks[column_data_source.get('id')].push(
+        [this, 'change:data_slice', callback])
       return null
 
     heatmap_update : (column_data_source, x_data_range,
