@@ -28737,7 +28737,7 @@ $.widget( "ui.slider", $.ui.mouse, {
           min: min,
           max: max,
           step: (max - min) / 50.0,
-          value: min
+          value: (min + max) / 2
         });
       };
 
@@ -28746,7 +28746,7 @@ $.widget( "ui.slider", $.ui.mouse, {
           min: min,
           max: max,
           step: (max - min) / 50.0,
-          value: min
+          value: (min + max) / 2
         });
       };
 
@@ -28761,7 +28761,8 @@ $.widget( "ui.slider", $.ui.mouse, {
         min = this.long_slice_max * (start - global_start) / (global_end - global_start);
         max = this.long_slice_max * (end - global_start) / (global_end - global_start);
         console.log('long slider bonds', min, max);
-        return this.long_slider_bounds(min, max);
+        this.long_slider_bounds(min, max);
+        return this.long_slide((min + max) / 2);
       };
 
       AppView.prototype.auto_lat_slider_bounds = function() {
@@ -28775,7 +28776,42 @@ $.widget( "ui.slider", $.ui.mouse, {
         min = this.lat_slice_max * (start - global_start) / (global_end - global_start);
         max = this.lat_slice_max * (end - global_start) / (global_end - global_start);
         console.log('lat slider bonds', min, max);
-        return this.lat_slider_bounds(min, max);
+        this.lat_slider_bounds(min, max);
+        return this.lat_slide((min + max) / 2);
+      };
+
+      AppView.prototype.lat_slide = function(value) {
+        var current_slice, new_slice, remote, x;
+        remote = this.mget_obj('horiz_source');
+        current_slice = remote.get('index_slice');
+        new_slice = (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+            x = current_slice[_i];
+            _results.push(x);
+          }
+          return _results;
+        })();
+        new_slice[0] = Math.round(value);
+        return remote.set('index_slice', new_slice);
+      };
+
+      AppView.prototype.long_slide = function(value) {
+        var current_slice, new_slice, remote, x;
+        remote = this.mget_obj('vert_source');
+        current_slice = remote.get('index_slice');
+        new_slice = (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
+            x = current_slice[_i];
+            _results.push(x);
+          }
+          return _results;
+        })();
+        new_slice[1] = Math.round(value);
+        return remote.set('index_slice', new_slice);
       };
 
       AppView.prototype.render = function() {
@@ -28820,20 +28856,7 @@ $.widget( "ui.slider", $.ui.mouse, {
           animate: "fast",
           slide: (function(_this) {
             return function(event, ui) {
-              var current_slice, new_slice, remote, x;
-              remote = _this.mget_obj('horiz_source');
-              current_slice = remote.get('index_slice');
-              new_slice = (function() {
-                var _i, _len, _results;
-                _results = [];
-                for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
-                  x = current_slice[_i];
-                  _results.push(x);
-                }
-                return _results;
-              })();
-              new_slice[0] = Math.round(ui.value);
-              return remote.set('index_slice', new_slice);
+              return _this.lat_slide(ui.value);
             };
           })(this)
         });
@@ -28843,20 +28866,7 @@ $.widget( "ui.slider", $.ui.mouse, {
           animate: "fast",
           slide: (function(_this) {
             return function(event, ui) {
-              var current_slice, new_slice, remote, x;
-              remote = _this.mget_obj('vert_source');
-              current_slice = remote.get('index_slice');
-              new_slice = (function() {
-                var _i, _len, _results;
-                _results = [];
-                for (_i = 0, _len = current_slice.length; _i < _len; _i++) {
-                  x = current_slice[_i];
-                  _results.push(x);
-                }
-                return _results;
-              })();
-              new_slice[1] = Math.round(ui.value);
-              return remote.set('index_slice', new_slice);
+              return _this.long_slide(ui.value);
             };
           })(this)
         });

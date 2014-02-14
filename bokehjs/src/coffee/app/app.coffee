@@ -33,14 +33,14 @@ define [
         min: min
         max: max
         step: (max - min) / 50.0 ,
-        value: min
+        value: (min + max)/2
       )
     long_slider_bounds : (min, max) ->
       @$el.find(".horiz_slider").slider(
         min: min
         max: max
         step: (max - min) / 50.0 ,
-        value: min
+        value: (min + max)/2
       )
     auto_long_slider_bounds : () =>
       end = @plot_view.x_range.get('end')
@@ -53,6 +53,7 @@ define [
       max = @long_slice_max * (end - global_start) / (global_end - global_start)
       console.log('long slider bonds', min, max)
       @long_slider_bounds(min, max)
+      @long_slide((min + max)/2)
 
     auto_lat_slider_bounds : () =>
       end = @plot_view.y_range.get('end')
@@ -65,6 +66,20 @@ define [
       max = @lat_slice_max * (end - global_start) / (global_end - global_start)
       console.log('lat slider bonds', min, max)
       @lat_slider_bounds(min, max)
+      @lat_slide((min+ max)/2)
+    lat_slide :  (value) ->
+        remote = @mget_obj('horiz_source')
+        current_slice = remote.get('index_slice')
+        new_slice = (x for x in current_slice)
+        new_slice[0] = Math.round(value)
+        remote.set('index_slice', new_slice)
+
+    long_slide : (value) ->
+        remote = @mget_obj('vert_source')
+        current_slice = remote.get('index_slice')
+        new_slice = (x for x in current_slice)
+        new_slice[1] = Math.round(value)
+        remote.set('index_slice', new_slice)
 
     render : () ->
       super()
@@ -94,25 +109,14 @@ define [
       @$el.find(".vert_slider").slider(
         orientation: "vertical",
         animate: "fast",
-        slide: ( event, ui ) =>
-          remote = @mget_obj('horiz_source')
-          current_slice = remote.get('index_slice')
-          new_slice = (x for x in current_slice)
-          new_slice[0] = Math.round(ui.value)
-          remote.set('index_slice', new_slice)
-
+        slide: (event, ui) => @lat_slide(ui.value)
       )
       #@lat_slider_bounds(@lat_slice_min, @lat_slice_max)
       @auto_lat_slider_bounds()
       @$el.find(".horiz_slider").slider(
         orientation: "horizontal",
         animate: "fast",
-        slide: ( event, ui ) =>
-          remote = @mget_obj('vert_source')
-          current_slice = remote.get('index_slice')
-          new_slice = (x for x in current_slice)
-          new_slice[1] = Math.round(ui.value)
-          remote.set('index_slice', new_slice)
+        slide: (event, ui) => @long_slide(ui.value)
       )
       @long_slider_bounds(@long_slice_min, @long_slice_max)
 
