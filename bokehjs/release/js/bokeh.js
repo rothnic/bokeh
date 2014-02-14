@@ -24085,7 +24085,9 @@ define("sprintf", (function (global) {
         var callback, range, throttle, _i, _len, _ref;
         this.stoplistening_for_updates(column_data_source);
         this.heatmap_update(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range);
-        throttle = _.throttle(this.heatmap_update, 300);
+        throttle = _.delay((function() {
+          return _.throttle(this.heatmap_update, 1000);
+        }), 100);
         callback = (function(_this) {
           return function() {
             return throttle(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range);
