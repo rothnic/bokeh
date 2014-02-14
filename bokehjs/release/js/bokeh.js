@@ -18801,10 +18801,6 @@ if (typeof define === 'function' && define.amd) {
           ctx.translate(0, y_offset);
           ctx.scale(1, -1);
           ctx.translate(0, -y_offset);
-          console.log('xrange', this.plot_view.x_range.get('start'), this.plot_view.x_range.get('end'));
-          console.log('yrange', this.plot_view.y_range.get('start'), this.plot_view.y_range.get('end'));
-          console.log('x', this.x, 'y', this.y, 'dw', this.dw, 'dh', this.dh);
-          console.log('sx', this.sx[i] | 0, 'sy', this.sy[i] | 0, 'sw', this.sw[i], 'sh', this.sh[i]);
           ctx.drawImage(this.image_data[i], this.sx[i] | 0, this.sy[i] | 0, this.sw[i], this.sh[i]);
           ctx.translate(0, y_offset);
           ctx.scale(1, -1);
@@ -24040,7 +24036,6 @@ define("sprintf", (function (global) {
 
       RemoteDataSource.prototype.line1d_update = function(column_data_source, domain_range, screen_range, primary_column, domain_name, columns) {
         var data_url, domain_limit, domain_resolution, owner_username, params, prefix, url;
-        console.log('calling update');
         data_url = this.get('data_url');
         owner_username = this.get('owner_username');
         prefix = this.base().Config.prefix;
@@ -24069,10 +24064,8 @@ define("sprintf", (function (global) {
               }, {
                 silent: true
               });
-              console.log('setting range', data.domain_limit);
             }
-            column_data_source.set('data', data.data);
-            return console.log('setting data', _.values(data.data)[0].length);
+            return column_data_source.set('data', data.data);
           },
           data: {
             downsample_function: 'line1d',
@@ -24123,7 +24116,6 @@ define("sprintf", (function (global) {
         data_slice = this.get('data_slice');
         params = [global_x_range, global_y_range, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice, this.get('transpose')];
         params = JSON.stringify(params);
-        console.log(y_bounds);
         return $.ajax({
           dataType: 'json',
           url: url,
@@ -24134,8 +24126,7 @@ define("sprintf", (function (global) {
             var new_data;
             new_data = _.clone(column_data_source.get('data'));
             _.extend(new_data, data);
-            column_data_source.set('data', new_data);
-            return console.log('setting data', data.image.length, data.image[0].length);
+            return column_data_source.set('data', new_data);
           },
           data: {
             downsample_function: 'heatmap',
@@ -28695,7 +28686,8 @@ $.widget( "ui.slider", $.ui.mouse, {
 
 });
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('app/app',["common/plot_widget", "common/has_parent", "common/continuum_view", "./app_template", "jquery_ui/slider"], function(PlotWidget, HasParent, ContinuumView, app_template, slider) {
@@ -28704,6 +28696,8 @@ $.widget( "ui.slider", $.ui.mouse, {
       __extends(AppView, _super);
 
       function AppView() {
+        this.auto_lat_slider_bounds = __bind(this.auto_lat_slider_bounds, this);
+        this.auto_long_slider_bounds = __bind(this.auto_long_slider_bounds, this);
         return AppView.__super__.constructor.apply(this, arguments);
       }
 
@@ -28723,11 +28717,68 @@ $.widget( "ui.slider", $.ui.mouse, {
         this.horiz_plot_view = new this.plot.default_view({
           'model': this.horiz_plot
         });
-        return this.render();
+        this.render();
+        this.listenTo(this.plot_view.y_range, 'change', this.auto_lat_slider_bounds);
+        this.listenTo(this.plot_view.x_range, 'change', this.auto_long_slider_bounds);
+        return this;
+      };
+
+      AppView.prototype.time_slider_bounds = function(min, max) {
+        return this.$el.find(".app_slider").slider({
+          min: min,
+          max: max,
+          step: (max - min) / 50.0,
+          value: min
+        });
+      };
+
+      AppView.prototype.lat_slider_bounds = function(min, max) {
+        return this.$el.find(".vert_slider").slider({
+          min: min,
+          max: max,
+          step: (max - min) / 50.0,
+          value: min
+        });
+      };
+
+      AppView.prototype.long_slider_bounds = function(min, max) {
+        return this.$el.find(".horiz_slider").slider({
+          min: min,
+          max: max,
+          step: (max - min) / 50.0,
+          value: min
+        });
+      };
+
+      AppView.prototype.auto_long_slider_bounds = function() {
+        var end, global_end, global_start, global_x_range, max, min, remote, start;
+        end = this.plot_view.x_range.get('end');
+        start = this.plot_view.x_range.get('start');
+        remote = this.mget_obj('remote_data_source');
+        global_x_range = remote.get('data').global_x_range;
+        global_start = global_x_range[0];
+        global_end = global_x_range[1];
+        min = this.long_slice_max * (start - global_start) / (global_end - global_start);
+        max = this.long_slice_max * (end - global_start) / (global_end - global_start);
+        console.log('long slider bonds', min, max);
+        return this.long_slider_bounds(min, max);
+      };
+
+      AppView.prototype.auto_lat_slider_bounds = function() {
+        var end, global_end, global_start, global_y_range, max, min, remote, start;
+        end = this.plot_view.y_range.get('end');
+        start = this.plot_view.y_range.get('start');
+        remote = this.mget_obj('remote_data_source');
+        global_y_range = remote.get('data').global_y_range;
+        global_start = global_y_range[0];
+        global_end = global_y_range[1];
+        min = this.lat_slice_max * (start - global_start) / (global_end - global_start);
+        max = this.lat_slice_max * (end - global_start) / (global_end - global_start);
+        console.log('lat slider bonds', min, max);
+        return this.lat_slider_bounds(min, max);
       };
 
       AppView.prototype.render = function() {
-        var max, min;
         AppView.__super__.render.call(this);
         this.plot_view.$el.detach();
         this.$el.html('');
@@ -28735,15 +28786,15 @@ $.widget( "ui.slider", $.ui.mouse, {
         this.$(".image_plot").append(this.plot_view.$el);
         this.$(".vert_plot").append(this.vert_plot_view.$el);
         this.$(".horiz_plot").append(this.horiz_plot_view.$el);
-        max = 93;
-        min = 0;
+        this.time_slice_max = 93;
+        this.time_slice_min = 0;
+        this.lat_slice_max = 4095;
+        this.lat_slice_min = 0;
+        this.long_slice_max = 8191;
+        this.long_slice_min = 0;
         this.$el.find(".app_slider").slider({
           orientation: "vertical",
           animate: "fast",
-          step: (max - min) / 50.0,
-          min: min,
-          max: max,
-          value: min,
           slide: (function(_this) {
             return function(event, ui) {
               var current_slice, new_slice, remote, x;
@@ -28763,15 +28814,10 @@ $.widget( "ui.slider", $.ui.mouse, {
             };
           })(this)
         });
-        max = 4095;
-        min = 0;
+        this.time_slider_bounds(this.time_slice_min, this.time_slice_max);
         this.$el.find(".vert_slider").slider({
           orientation: "vertical",
           animate: "fast",
-          step: (max - min) / 50.0,
-          min: min,
-          max: max,
-          value: min,
           slide: (function(_this) {
             return function(event, ui) {
               var current_slice, new_slice, remote, x;
@@ -28791,15 +28837,10 @@ $.widget( "ui.slider", $.ui.mouse, {
             };
           })(this)
         });
-        max = 8191;
-        min = 0;
-        return this.$el.find(".horiz_slider").slider({
+        this.auto_lat_slider_bounds();
+        this.$el.find(".horiz_slider").slider({
           orientation: "horizontal",
           animate: "fast",
-          step: (max - min) / 50.0,
-          min: min,
-          max: max,
-          value: min,
           slide: (function(_this) {
             return function(event, ui) {
               var current_slice, new_slice, remote, x;
@@ -28819,6 +28860,7 @@ $.widget( "ui.slider", $.ui.mouse, {
             };
           })(this)
         });
+        return this.long_slider_bounds(this.long_slice_min, this.long_slice_max);
       };
 
       return AppView;
