@@ -406,6 +406,7 @@ class HDF5DataBackend(AbstractDataBackend):
             #not supported for z yet...
             pass
         elif index_slice:
+            print ('index_slice', index_slice)
             index_slices = [slice(None) if x is None else x for x in index_slice]
             dataset = dataset[tuple(index_slices)]
         if transpose:

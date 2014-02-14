@@ -40,7 +40,7 @@ define [
 
     line1d_update : (column_data_source, domain_range, screen_range,
                      primary_column, domain_name, columns) =>
-      console.log('calling update')
+      #console.log('calling update')
       data_url = @get('data_url')
       owner_username = @get('owner_username')
       prefix = @base().Config.prefix
@@ -67,9 +67,9 @@ define [
               ,
                 silent : true
             )
-            console.log('setting range', data.domain_limit)
+            #console.log('setting range', data.domain_limit)
           column_data_source.set('data', data.data)
-          console.log('setting data', _.values(data.data)[0].length)
+          #console.log('setting data', _.values(data.data)[0].length)
         data :
           downsample_function : 'line1d'
           downsample_parameters : params
@@ -126,7 +126,7 @@ define [
         @get('transpose')
       ]
       params = JSON.stringify(params)
-      console.log(y_bounds)
+      #console.log(y_bounds)
       $.ajax(
         dataType: 'json'
         url : url
@@ -137,7 +137,7 @@ define [
           new_data = _.clone(column_data_source.get('data'))
           _.extend(new_data, data)
           column_data_source.set('data', new_data)
-          console.log('setting data', data.image.length, data.image[0].length)
+          #console.log('setting data', data.image.length, data.image[0].length)
         data :
           downsample_function : 'heatmap'
           downsample_parameters : params

@@ -96,12 +96,6 @@ define [
         ctx.translate(0, y_offset)
         ctx.scale(1, -1)
         ctx.translate(0, -y_offset)
-        console.log('xrange', this.plot_view.x_range.get('start'),
-          this.plot_view.x_range.get('end'))
-        console.log('yrange', this.plot_view.y_range.get('start'),
-          this.plot_view.y_range.get('end'))
-        console.log('x', this.x, 'y', this.y, 'dw', this.dw, 'dh', this.dh)
-        console.log('sx', @sx[i]|0, 'sy', @sy[i]|0, 'sw', @sw[i], 'sh', @sh[i])
         ctx.drawImage(@image_data[i], @sx[i]|0, @sy[i]|0, @sw[i], @sh[i])
         ctx.translate(0, y_offset)
         ctx.scale(1, -1)

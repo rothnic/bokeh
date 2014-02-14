@@ -17,6 +17,54 @@ define [
       @horiz_plot = @mget_obj('horiz_plot')
       @horiz_plot_view = new @plot.default_view('model' : @horiz_plot)
       @render()
+      @listenTo(@plot_view.y_range, 'change', @auto_lat_slider_bounds)
+      @listenTo(@plot_view.x_range, 'change', @auto_long_slider_bounds)
+      return @
+
+    time_slider_bounds : (min, max) ->
+      @$el.find(".app_slider").slider(
+        min: min
+        max: max
+        step: (max - min) / 50.0 ,
+        value: min
+      )
+    lat_slider_bounds : (min, max) ->
+      @$el.find(".vert_slider").slider(
+        min: min
+        max: max
+        step: (max - min) / 50.0 ,
+        value: min
+      )
+    long_slider_bounds : (min, max) ->
+      @$el.find(".horiz_slider").slider(
+        min: min
+        max: max
+        step: (max - min) / 50.0 ,
+        value: min
+      )
+    auto_long_slider_bounds : () =>
+      end = @plot_view.x_range.get('end')
+      start = @plot_view.x_range.get('start')
+      remote = @mget_obj('remote_data_source')
+      global_x_range = remote.get('data').global_x_range
+      global_start = global_x_range[0]
+      global_end = global_x_range[1]
+      min = @long_slice_max * (start - global_start) / (global_end - global_start)
+      max = @long_slice_max * (end - global_start) / (global_end - global_start)
+      console.log('long slider bonds', min, max)
+      @long_slider_bounds(min, max)
+
+    auto_lat_slider_bounds : () =>
+      end = @plot_view.y_range.get('end')
+      start = @plot_view.y_range.get('start')
+      remote = @mget_obj('remote_data_source')
+      global_y_range = remote.get('data').global_y_range
+      global_start = global_y_range[0]
+      global_end = global_y_range[1]
+      min = @lat_slice_max * (start - global_start) / (global_end - global_start)
+      max = @lat_slice_max * (end - global_start) / (global_end - global_start)
+      console.log('lat slider bonds', min, max)
+      @lat_slider_bounds(min, max)
 
     render : () ->
       super()
@@ -26,15 +74,15 @@ define [
       @$(".image_plot").append(@plot_view.$el)
       @$(".vert_plot").append(@vert_plot_view.$el)
       @$(".horiz_plot").append(@horiz_plot_view.$el)
-      max = 93
-      min = 0
+      @time_slice_max = 93
+      @time_slice_min = 0
+      @lat_slice_max = 4095
+      @lat_slice_min = 0
+      @long_slice_max = 8191
+      @long_slice_min = 0
       @$el.find(".app_slider").slider(
         orientation: "vertical",
         animate: "fast",
-        step: (max - min) / 50.0 ,
-        min: min
-        max: max
-        value: min
         slide: ( event, ui ) =>
           remote = @mget_obj('remote_data_source')
           current_slice = remote.get('index_slice')
@@ -42,18 +90,11 @@ define [
           new_slice[2] = Math.round(ui.value)
           remote.set('index_slice', new_slice)
       )
-
-      max = 4095
-      min = 0
+      @time_slider_bounds(@time_slice_min, @time_slice_max)
       @$el.find(".vert_slider").slider(
         orientation: "vertical",
         animate: "fast",
-        step: (max - min) / 50.0 ,
-        min: min
-        max: max
-        value: min
         slide: ( event, ui ) =>
-
           remote = @mget_obj('horiz_source')
           current_slice = remote.get('index_slice')
           new_slice = (x for x in current_slice)
@@ -61,15 +102,11 @@ define [
           remote.set('index_slice', new_slice)
 
       )
-      max = 8191
-      min = 0
+      #@lat_slider_bounds(@lat_slice_min, @lat_slice_max)
+      @auto_lat_slider_bounds()
       @$el.find(".horiz_slider").slider(
         orientation: "horizontal",
         animate: "fast",
-        step: (max - min) / 50.0 ,
-        min: min
-        max: max
-        value: min
         slide: ( event, ui ) =>
           remote = @mget_obj('vert_source')
           current_slice = remote.get('index_slice')
@@ -77,6 +114,7 @@ define [
           new_slice[1] = Math.round(ui.value)
           remote.set('index_slice', new_slice)
       )
+      @long_slider_bounds(@long_slice_min, @long_slice_max)
 
   class App extends HasParent
     type : "App"

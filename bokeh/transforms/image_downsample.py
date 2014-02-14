@@ -7,15 +7,11 @@ def downsample(image, image_x_axis, image_y_axis,
     x_bounds = np.searchsorted(image_x_axis, x_bounds)
     y_bounds = np.searchsorted(image_y_axis, y_bounds)
     #y_bounds = image.shape[0] + 1 - y_bounds[::-1]
-    print x_bounds, y_bounds
     subset = image[y_bounds[0]:y_bounds[1],
                    x_bounds[0]:x_bounds[1],]
-    print subset.shape
     x_downsample_factor = max(round(subset.shape[1] / x_resolution / 3.), 1)
     y_downsample_factor = max(round(subset.shape[0] / y_resolution / 3.), 1)
-    print x_downsample_factor, y_downsample_factor
     subset = subset[::x_downsample_factor, ::y_downsample_factor]
-    print subset.shape
     image = scipy.misc.imresize(subset, (x_resolution, y_resolution),
                         interp='nearest')
     bounds = image_x_axis[x_bounds[0]:x_bounds[1]]
