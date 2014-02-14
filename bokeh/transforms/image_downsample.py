@@ -17,7 +17,7 @@ def downsample(image, image_x_axis, image_y_axis,
     subset = subset[::x_downsample_factor, ::y_downsample_factor]
     print subset.shape
     image = scipy.misc.imresize(subset, (x_resolution, y_resolution),
-                        interp='bicubic')
+                        interp='nearest')
     bounds = image_x_axis[x_bounds[0]:x_bounds[1]]
     dw = np.max(bounds) - np.min(bounds)
     bounds = image_y_axis[y_bounds[0]:y_bounds[1]]

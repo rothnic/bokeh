@@ -399,7 +399,7 @@ class HDF5DataBackend(AbstractDataBackend):
     def heatmap_downsample(self, request_username, request_docid, data_url, 
                           downsample_function, downsample_parameters):
         dataset = self.client[data_url].node
-        (global_dw, global_dh, global_offset_x, global_offset_y,
+        (global_x_range, global_y_range, global_offset_x, global_offset_y,
          x_bounds, y_bounds, x_resolution, y_resolution,
          index_slice, data_slice, transpose) = downsample_parameters
         
@@ -409,11 +409,11 @@ class HDF5DataBackend(AbstractDataBackend):
         elif index_slice:
             index_slices = [slice(None) if x is None else x for x in index_slice]
             dataset = dataset[tuple(index_slices)]
-        image_x_axis = np.linspace(0, 
-                                   global_dw,
+        image_x_axis = np.linspace(global_x_range[0],
+                                   global_x_range[1],
                                    dataset.shape[1])
-        image_y_axis = np.linspace(0,
-                                   global_dh,
+        image_y_axis = np.linspace(global_y_range[0],
+                                   global_y_range[1],
                                    dataset.shape[0])
         result = image_downsample.downsample(dataset, image_x_axis, image_y_axis,
                                              x_bounds, y_bounds, x_resolution,

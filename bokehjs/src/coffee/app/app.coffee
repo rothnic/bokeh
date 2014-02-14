@@ -26,7 +26,7 @@ define [
       @$(".image_plot").append(@plot_view.$el)
       @$(".vert_plot").append(@vert_plot_view.$el)
       @$(".horiz_plot").append(@horiz_plot_view.$el)
-      max = 42
+      max = 93
       min = 0
       @$el.find(".app_slider").slider(
         orientation: "vertical",
