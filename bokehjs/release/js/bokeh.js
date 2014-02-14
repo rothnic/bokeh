@@ -24106,7 +24106,7 @@ define("sprintf", (function (global) {
       };
 
       RemoteDataSource.prototype.heatmap_update = function(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range) {
-        var data_slice, data_url, global_dh, global_dw, global_offset_x, global_offset_y, index_slice, owner_username, params, prefix, url, x_bounds, x_resolution, y_bounds, y_resolution;
+        var data_slice, data_url, global_offset_x, global_offset_y, global_x_range, global_y_range, index_slice, owner_username, params, prefix, url, x_bounds, x_resolution, y_bounds, y_resolution;
         data_url = this.get('data_url');
         owner_username = this.get('owner_username');
         prefix = this.base().Config.prefix;
@@ -24115,13 +24115,13 @@ define("sprintf", (function (global) {
         y_resolution = y_screen_range.get('end') - y_screen_range.get('start');
         x_bounds = [x_data_range.get('start'), x_data_range.get('end')];
         y_bounds = [y_data_range.get('start'), y_data_range.get('end')];
-        global_dw = this.get('data').global_dw[0];
-        global_dh = this.get('data').global_dh[0];
+        global_x_range = this.get('data').global_x_range;
+        global_y_range = this.get('data').global_y_range;
         global_offset_x = this.get('data').global_offset_x[0];
         global_offset_y = this.get('data').global_offset_y[0];
         index_slice = this.get('index_slice');
         data_slice = this.get('data_slice');
-        params = [global_dw, global_dh, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice, this.get('transpose')];
+        params = [global_x_range, global_y_range, global_offset_x, global_offset_y, x_bounds, y_bounds, x_resolution, y_resolution, index_slice, data_slice, this.get('transpose')];
         params = JSON.stringify(params);
         console.log(y_bounds);
         return $.ajax({
@@ -28735,7 +28735,7 @@ $.widget( "ui.slider", $.ui.mouse, {
         this.$(".image_plot").append(this.plot_view.$el);
         this.$(".vert_plot").append(this.vert_plot_view.$el);
         this.$(".horiz_plot").append(this.horiz_plot_view.$el);
-        max = 42;
+        max = 93;
         min = 0;
         this.$el.find(".app_slider").slider({
           orientation: "vertical",
