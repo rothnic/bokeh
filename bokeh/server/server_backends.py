@@ -402,13 +402,16 @@ class HDF5DataBackend(AbstractDataBackend):
         (global_x_range, global_y_range, global_offset_x, global_offset_y,
          x_bounds, y_bounds, x_resolution, y_resolution,
          index_slice, data_slice, transpose) = downsample_parameters
-        
         if data_slice:
             #not supported for z yet...
             pass
         elif index_slice:
             index_slices = [slice(None) if x is None else x for x in index_slice]
             dataset = dataset[tuple(index_slices)]
+        if transpose:
+            dataset = dataset[:].T
+            #HACK
+            dataset = dataset[::-1,:]
         image_x_axis = np.linspace(global_x_range[0],
                                    global_x_range[1],
                                    dataset.shape[1])
@@ -419,9 +422,6 @@ class HDF5DataBackend(AbstractDataBackend):
                                              x_bounds, y_bounds, x_resolution,
                                              y_resolution)
         output = {}
-        if transpose:
-            print 'transpose'
-            result['data'] = result['data'].T
         output['image'] = [result['data']]
         output['x'] = [global_offset_x + result['offset_x']]
         output['y'] = [global_offset_y + result['offset_y']]
