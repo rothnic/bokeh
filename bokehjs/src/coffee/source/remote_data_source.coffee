@@ -85,7 +85,7 @@ define [
           y_data_range,
           x_screen_range, y_screen_range,
         )
-      throttle = _.delay((() -> _.throttle(@heatmap_update, 1000)), 100)
+      throttle = _.throttle(@heatmap_update, 300)
       callback = () => throttle(column_data_source, x_data_range,
           y_data_range,
           x_screen_range, y_screen_range,
