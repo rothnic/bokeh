@@ -35,7 +35,7 @@ from .server_backends import (RedisBackboneStorage,
                               HDF5DataBackend,
                               )
 
-PORT = 5006
+PORT = 5007
 REDIS_PORT = 6379
 
 

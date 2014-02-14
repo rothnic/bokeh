@@ -23988,7 +23988,37 @@ define("sprintf", (function (global) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('source/remote_data_source',["underscore", "backbone", "common/has_properties"], function(_, Backbone, HasProperties) {
-    var RemoteDataSource, RemoteDataSources;
+    var RemoteDataSource, RemoteDataSources, ajax_throttle;
+    ajax_throttle = function(func) {
+      var busy, callback, has_callback, resp;
+      busy = false;
+      resp = null;
+      has_callback = false;
+      callback = function() {
+        if (busy) {
+          if (has_callback) {
+            return console.log('already bound, ignoreing');
+          } else {
+            console.log('busy, so doing it later');
+            has_callback = true;
+            return resp.done(function() {
+              has_callback = false;
+              return callback();
+            });
+          }
+        } else {
+          console.log('executing');
+          busy = true;
+          resp = func();
+          return resp.done(function() {
+            console.log('done, setting to false');
+            busy = false;
+            return resp = null;
+          });
+        }
+      };
+      return callback;
+    };
     RemoteDataSource = (function(_super) {
       __extends(RemoteDataSource, _super);
 
@@ -24075,15 +24105,14 @@ define("sprintf", (function (global) {
       };
 
       RemoteDataSource.prototype.listen_for_heatmap_updates = function(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range) {
-        var callback, range, throttle, _i, _len, _ref;
+        var callback, range, _i, _len, _ref;
         this.stoplistening_for_updates(column_data_source);
-        this.heatmap_update(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range);
-        throttle = _.throttle(this.heatmap_update, 300);
-        callback = (function(_this) {
+        callback = ajax_throttle((function(_this) {
           return function() {
-            return throttle(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range);
+            return _this.heatmap_update(column_data_source, x_data_range, y_data_range, x_screen_range, y_screen_range);
           };
-        })(this);
+        })(this));
+        callback();
         this.callbacks[column_data_source.get('id')] = [];
         _ref = [x_data_range, y_data_range, x_screen_range, y_screen_range];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {

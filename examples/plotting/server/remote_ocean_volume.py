@@ -4,7 +4,7 @@ from bokeh.objects import Range1d, MouseSlicer
 from bokeh.appobject import App
 #-90-90
 #-180:180
-output_server("remote_ocean_slider")
+output_server("remote_ocean_slider", url="http://localhost:5007/")
 #output_server("image2")
 long_range=Range1d(start=-180, end=180)
 lat_range=Range1d(start=-90, end=90)

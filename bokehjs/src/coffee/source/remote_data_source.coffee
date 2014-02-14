@@ -5,6 +5,31 @@ define [
   "common/has_properties",
 ], (_, Backbone, HasProperties) ->
 
+  ajax_throttle = (func) ->
+    busy = false
+    resp = null
+    has_callback = false
+    callback = () ->
+      if busy
+        if has_callback
+          console.log('already bound, ignoreing')
+        else
+          console.log('busy, so doing it later')
+          has_callback = true
+          resp.done(() ->
+            has_callback = false
+            callback()
+          )
+      else
+        console.log('executing')
+        busy = true
+        resp = func()
+        resp.done(() ->
+          console.log('done, setting to false')
+          busy = false
+          resp = null
+        )
+    return callback
   class RemoteDataSource extends HasProperties
     # Datasource where the data is defined column-wise, i.e. each key in the
     # the data attribute is a column name, and its value is an array of scalars.
@@ -81,15 +106,13 @@ define [
             ) ->
       #ensure we only have one set of events bound
       @stoplistening_for_updates(column_data_source)
-      @heatmap_update(column_data_source, x_data_range,
+      #throttle = _.throttle(@heatmap_update, 300)
+      callback = ajax_throttle(() =>
+        @heatmap_update(column_data_source, x_data_range,
           y_data_range,
-          x_screen_range, y_screen_range,
-        )
-      throttle = _.throttle(@heatmap_update, 300)
-      callback = () => throttle(column_data_source, x_data_range,
-          y_data_range,
-          x_screen_range, y_screen_range,
+          x_screen_range, y_screen_range)
       )
+      callback()
       @callbacks[column_data_source.get('id')] = []
       for range in [x_data_range, y_data_range, x_screen_range, y_screen_range]
         @listenTo(range, 'change', callback)
