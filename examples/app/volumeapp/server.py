@@ -29,6 +29,22 @@ def make_plot(force=False):
                                     'palette': ["Spectral-11"]
                                 }
                           )
+    
+    splat_source = ServerDataSource(data_url="/defaultuser/splat.table/stack", 
+                                    owner_username="defaultuser",
+                                    index_slice=[None,None],
+                                    data={'x': [0], 
+                                          'y': [0],
+                                          'global_x_range' : [0, 10],
+                                          'global_y_range' : [0, 10],
+                                          'global_offset_x' : [0],
+                                          'global_offset_y' : [0],
+                                          'dw' : [10], 
+                                          'dh' : [10], 
+                                          'palette': ["Spectral-11"]
+                                      }
+    )
+    
     plot = image(
         source=source,
         image="image",
@@ -43,9 +59,26 @@ def make_plot(force=False):
         y_range=Range1d(start=0, end=10),
         tools="pan,wheel_zoom,box_zoom,reset,select"
     )
-    app = App(server_data_source=source, image_plot=plot,
-              data_directory="/home/hugoshi/work/bokeh/remotedata")
+    splat_plot = image(
+        source=splat_source,
+        image="image",
+        x="x",
+        y="y",
+        dw="dw",
+        dh="dh",
+        plot_width=500,
+        plot_height=500,
+        palette="palette",
+        x_range=Range1d(start=0, end=10), 
+        y_range=Range1d(start=0, end=10),
+        tools="pan,wheel_zoom,box_zoom,reset,select"
+    )
 
+    app = App(server_data_source=source, image_plot=plot, splat_plot=splat_plot,
+              splat_data_source=splat_source,
+              data_directory="/home/hugoshi/work/bokeh/remotedata")
+    source.on_change('selection_spec', app, 'selection_change')
+    source._dirty = True
     sess.plotcontext.children = [app]
     sess.plotcontext._dirty = True
     
@@ -56,6 +89,8 @@ def make_plot(force=False):
         
 @app.route("/app")
 def main():
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
     docid = make_plot(force=True)
     return render_template('page.html', docid=docid)
 

@@ -73,7 +73,7 @@ define [
     rectangular_selection_spec : (xrange, yrange) ->
       [x, y] = @plot_view.map_from_screen(xrange, yrange, 'screen')
       [x, y] = @plot_view.map_from_screen(x, y)
-      return {'image_bounds_x' : x, 'image_bounds_y' : y}
+      return {'image_bounds_x' : [x[0],x[1]], 'image_bounds_y' : [y[0],y[1]]}
 
     _map_data: () ->
       [@sx, @sy] = @plot_view.map_to_screen(@x, @glyph_props.x.units, @y, @glyph_props.y.units)

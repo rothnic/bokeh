@@ -115,7 +115,7 @@ define [
         spec = column_data_source.get('selection_spec')
         @save({'selection_spec': spec}, {'patch' : true})
         callback()
-
+      @data_source_listen(column_data_source, this, 'change:data_url', callback)
       for range in [x_data_range, y_data_range, x_screen_range, y_screen_range]
         @data_source_listen(column_data_source, range, 'change', callback)
       @data_source_listen(column_data_source, this, 'change:index_slice', callback)

@@ -23,7 +23,10 @@ volumeapp.main = function(){
     render : function(){
       var model = this.mget_obj('image_plot');
       var view = new model.default_view({model : model});
+      var model = this.mget_obj('splat_plot');
+      var splatview = new model.default_view({model : model});
       $('#mainimage').append(view.el);
+      $('#splatimage').append(splatview.el);      
       $('#sliceslider').slider({
         orientation : "vertical",
         animate : "fast",

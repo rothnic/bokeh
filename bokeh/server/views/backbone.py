@@ -166,13 +166,13 @@ def update(docid, typename, id):
     doc = docs.Doc.load(bokeh_app.servermodel_storage, docid)
     sess = bokeh_app.backbone_storage.get_session(docid)    
     sess.load_all()
-    import pdb; pdb.set_trace()
     modeldata = protocol.deserialize_json(request.data.decode('utf-8'))
     #patch id is not passed...
     modeldata['id'] = id
     sess.load_all_callbacks()
     sess.load_attrs(typename, [modeldata], events='existing')
     changed = sess.store_all()
+    print changed
     model = sess._models[id]
     try:
         idx = changed.index(model)
