@@ -113,6 +113,7 @@ define [
 
       set_selection_and_update = () =>
         spec = column_data_source.get('selection_spec')
+        console.log(spec)
         @save({'selection_spec': spec}, {'patch' : true})
         callback()
       @data_source_listen(column_data_source, this, 'change:data_url', callback)

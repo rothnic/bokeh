@@ -4,8 +4,8 @@ import logging
 approot = abspath(dirname(dirname(__file__)))
 app = Flask('volumeapp')
 app.debug = True
-from bokeh.plotting import output_server, session, image
-from bokeh.objects import ServerDataSource
+from bokeh.plotting import output_server, session, image, line
+from bokeh.objects import ServerDataSource, ColumnDataSource
 from volumeapp.objects import App
 import uuid
 
@@ -30,7 +30,7 @@ def make_plot(force=False):
                                 }
                           )
     
-    splat_source = ServerDataSource(data_url="/defaultuser/splat.table/stack", 
+    splat_source = ServerDataSource(data_url="/defaultuser/splat.table/splat", 
                                     owner_username="defaultuser",
                                     index_slice=[None,None],
                                     data={'x': [0], 
@@ -73,9 +73,19 @@ def make_plot(force=False):
         y_range=Range1d(start=0, end=10),
         tools="pan,wheel_zoom,box_zoom,reset,select"
     )
-
+    line_source = ColumnDataSource(data={'slice' : range(47), 
+                                         'avg' : [], 
+                                         'sum' :[], 
+                                         'max' : []})
+    line1 = line(source=line_source, x='slice', y='avg', plot_width=1000, 
+                 plot_height=200)
+    line2 = line(source=line_source, x='slice', y='max', plot_width=1000, 
+                 plot_height=200)
     app = App(server_data_source=source, image_plot=plot, splat_plot=splat_plot,
               splat_data_source=splat_source,
+              line1=line1,
+              line2=line2,
+              line_source=line_source,
               data_directory="/home/hugoshi/work/bokeh/remotedata")
     source.on_change('selection_spec', app, 'selection_change')
     source._dirty = True
