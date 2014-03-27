@@ -15,12 +15,6 @@ define [
 
     setup_server_data : () ->
       serversource = @mget_obj('server_data_source')
-      # hack, call set data, becuase there are some attrs that we need
-      # that are in it
-      data = _.extend({}, @mget_obj('data_source').get('data'), serversource.get('data'))
-      @mget_obj('data_source').set('data', data)
-      @set_data(false)
-
       serversource.listen_for_heatmap_updates(@mget_obj('data_source'),
         @plot_view.x_range,
         @plot_view.y_range,
@@ -75,6 +69,11 @@ define [
         image_data.data.set(buf8)
         ctx.putImageData(image_data, 0, 0);
         @image_data[i] = canvas
+
+    rectangular_selection_spec : (xrange, yrange) ->
+      [x, y] = @plot_view.map_from_screen(xrange, yrange, 'screen')
+      [x, y] = @plot_view.map_from_screen(x, y)
+      return {'image_bounds_x' : x, 'image_bounds_y' : y}
 
     _map_data: () ->
       [@sx, @sy] = @plot_view.map_to_screen(@x, @glyph_props.x.units, @y, @glyph_props.y.units)

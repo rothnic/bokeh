@@ -124,9 +124,11 @@ define [
     PandasPlotSource:         'widget/pandas/pandas_plot_source'
 
   mod_cache = {}
+  collection_overrides = {}
 
   Collections = (typename) ->
-
+    if collection_overrides[typename]
+      return collection_overrides[typename]
     if not locations[typename]
       throw "./base: Unknown Collection #{typename}"
 
@@ -138,7 +140,11 @@ define [
 
     return mod_cache[modulename].Collection
 
+  Collections.register = (name, collection) ->
+    collection_overrides[name] = collection
+
   return {
+    "collection_overrides" : collection_overrides, # for testing only
     "mod_cache": mod_cache, # for testing only
     "locations": locations,
     "Collections": Collections,

@@ -675,9 +675,10 @@ class List(ContainerProperty):
 
     def validate(self, value):
         super(List, self).validate(value)
-
         if value is not None:
             if not (isinstance(value, list) and all(self.item_type.is_valid(item) for item in value)):
+                import pdb; pdb.set_trace()
+                self.item_type.is_valid(value[0])
                 raise ValueError("expected an element of %s, got %s" % (self, value))
 
     def __str__(self):

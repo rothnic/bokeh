@@ -87,7 +87,25 @@ define [
     _dragend : () ->
       @_select_data()
 
+    _set_data_selection_spec: () ->
+      geometry = {
+        type: 'rect'
+        vx0: @xrange[0]
+        vx1: @xrange[1]
+        vy0: @yrange[0]
+        vy1: @yrange[1]
+      }
+
+      for renderer in @mget_obj('renderers')
+        renderer_view = @plot_view.renderers[renderer.id]
+        if renderer_view.rectangular_selection_spec?
+          spec = renderer_view.rectangular_selection_spec(@xrange, @yrange)
+          renderer.get_obj('data_source').set(
+              selection_spec:spec
+          )
+      return null
     _select_data: () ->
+      @_set_data_selection_spec()
       if not @basepoint_set
         return
 
@@ -124,11 +142,10 @@ define [
         #lists of v.
         selected = _.intersection.apply(_, v)
         ds = datasources[k]
-        ds.save(
-          selected:selected
-        ,
-          {patch: true}
-        )
+        if not _.isEqual(ds.get('selected'), selected)
+          ds.set(
+            selected:selected
+          )
         @plot_view.unpause()
       return null
 

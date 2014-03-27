@@ -21,7 +21,7 @@ from flask import Flask
 
 # import objects so that we can resolve them
 from .. import protocol, objects, glyphs
-import plotting
+from .. import plotting
 from .app import bokeh_app
 from .models import user
 from . import services

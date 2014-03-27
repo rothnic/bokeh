@@ -10,24 +10,21 @@ define [
     resp = null
     has_callback = false
     callback = () ->
+      console.log('called','busy', busy, 'has_callback', has_callback)
       if busy
-        if has_callback
-          console.log('already bound, ignoreing')
-        else
-          console.log('busy, so doing it later')
-          has_callback = true
-          resp.done(() ->
-            has_callback = false
-            callback()
-          )
+        console.log('busy')
+        has_callback = true
       else
         console.log('executing')
         busy = true
         resp = func()
-        resp.done(() ->
+        window.resp = resp
+        resp.always(() ->
           console.log('done, setting to false')
           busy = false
-          resp = null
+          if has_callback
+            has_callback = false
+            callback()
         )
     return callback
   class ServerDataSource extends HasProperties
@@ -113,17 +110,28 @@ define [
           x_screen_range, y_screen_range)
       )
       callback()
-      @callbacks[column_data_source.get('id')] = []
+
+      set_selection_and_update = () =>
+        spec = column_data_source.get('selection_spec')
+        @save({'selection_spec': spec}, {'patch' : true})
+        callback()
+
       for range in [x_data_range, y_data_range, x_screen_range, y_screen_range]
-        @listenTo(range, 'change', callback)
-        @callbacks[column_data_source.get('id')].push([range, 'change', callback])
-      @listenTo(this, 'change:index_slice', callback)
-      @callbacks[column_data_source.get('id')].push(
-        [this, 'change:index_slice', callback])
-      @listenTo(this, 'change:data_slice', callback)
-      @callbacks[column_data_source.get('id')].push(
-        [this, 'change:data_slice', callback])
+        @data_source_listen(column_data_source, range, 'change', callback)
+      @data_source_listen(column_data_source, this, 'change:index_slice', callback)
+      @data_source_listen(column_data_source, this, 'change:data_slice', callback)
+      @data_source_listen(column_data_source, column_data_source,
+        'change:selected', callback)
+      @data_source_listen(column_data_source, column_data_source,
+        'change:selection_spec', set_selection_and_update)
       return null
+
+    data_source_listen : (data_source, obj, event, callback) =>
+      ds_id = data_source.get('id')
+      if not @callbacks[ds_id]?
+        @callbacks[ds_id] = []
+      @callbacks[ds_id].push(obj, event, callback)
+      @listenTo(obj, event, callback)
 
     heatmap_update : (column_data_source, x_data_range,
           y_data_range,
@@ -142,6 +150,7 @@ define [
       global_offset_y = @get('data').global_offset_y[0]
       index_slice = @get('index_slice')
       data_slice = @get('data_slice')
+      console.log('executing', x_bounds, y_bounds)
       params = [global_x_range, global_y_range,
         global_offset_x, global_offset_y,
         x_bounds, y_bounds, x_resolution,
@@ -155,12 +164,11 @@ define [
         url : url
         xhrField :
           withCredentials : true
-        success : (data) ->
+        success : (data) =>
           #hack
-          new_data = _.clone(column_data_source.get('data'))
-          _.extend(new_data, data)
+          old_data = _.clone(this.get('data'))
+          new_data = _.extend(old_data, data)
           column_data_source.set('data', new_data)
-          #console.log('setting data', data.image.length, data.image[0].length)
         data :
           downsample_function : 'heatmap'
           downsample_parameters : params

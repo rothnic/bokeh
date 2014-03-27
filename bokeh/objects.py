@@ -23,7 +23,7 @@ class DataSource(PlotObject):
     # ordering is incoporated here
     column_names = List(String)
     selected = List(String) # index of selected points
-
+    selection_spec  = Dict()
     def columns(self, *columns):
         """ Returns a ColumnsRef object that points to a column or set of
         columns on this data source
@@ -466,7 +466,7 @@ class DataSlider(Renderer):
     field = String()
 
 class PlotContext(PlotObject):
-    children = List(Instance(Plot, has_ref=True), has_ref=True)
+    children = List(Instance(Any, has_ref=True), has_ref=True)
 
 class PlotList(PlotContext):
     # just like plot context, except plot context has special meaning
