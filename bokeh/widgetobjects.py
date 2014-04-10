@@ -129,6 +129,7 @@ class BokehApplet(PlotObject):
                 title=app.__class__.__view_model__,
                 docname=docname, 
                 docid=docid,
+                objid=app._id,
                 splitjs=bokeh_app.splitjs)
         exampleapp.__name__ = cls.__view_model__
         bokeh_app.route(route)(exampleapp)
