@@ -3,7 +3,6 @@
 }(this, function () {
   //almond, and your modules will be inlined here
 
-
 /**
  * @license almond 0.2.9 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
@@ -12313,6 +12312,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       var Config, doc, jsondata, m, url, xhr;
       Config = require("./base").Config;
       doc = models[0].get('doc');
+      if (doc == null) {
+        throw new Error("Unset 'doc' in " + models[0]);
+      }
       jsondata = (function() {
         var _i, _len, _results;
         _results = [];
@@ -12345,8 +12347,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
 
 }).call(this);
 
-//# sourceMappingURL=bulk_save.js.map
-;
+/*
+//@ sourceMappingURL=bulk_save.js.map
+*/;
 (function() {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -12434,6 +12437,10 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
         _ref = HasProperties.__super__.constructor.apply(this, arguments);
         return _ref;
       }
+
+      HasProperties.prototype.toString = function() {
+        return "" + this.type + "(" + this.id + ")";
+      };
 
       HasProperties.prototype.destroy = function(options) {
         var target, val, _ref1, _results;
@@ -12695,8 +12702,12 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       HasProperties.prototype.url = function() {
-        var url;
-        url = this.get_base().Config.prefix + "/bokeh/bb/" + this.get('doc') + "/" + this.type + "/";
+        var doc, url;
+        doc = this.get('doc');
+        if (doc == null) {
+          throw new Error("Unset 'doc' in " + this);
+        }
+        url = this.get_base().Config.prefix + "/bokeh/bb/" + doc + "/" + this.type + "/";
         if (this.isNew()) {
           return url;
         }
@@ -12712,12 +12723,15 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       HasProperties.prototype.rpc = function(funcname, args, kwargs) {
-        var data, docid, id, prefix, resp, type, url;
+        var data, doc, id, prefix, resp, type, url;
         prefix = this.get_base().Config.prefix;
-        docid = this.get('doc');
+        doc = this.get('doc');
+        if (doc == null) {
+          throw new Error("Unset 'doc' in " + this);
+        }
         id = this.get('id');
         type = this.type;
-        url = "" + prefix + "/bokeh/bb/rpc/" + docid + "/" + type + "/" + id + "/" + funcname + "/";
+        url = "" + prefix + "/bokeh/bb/rpc/" + doc + "/" + type + "/" + id + "/" + funcname + "/";
         data = {
           args: args,
           kwargs: kwargs
@@ -14952,7 +14966,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('common/plot',["underscore", "backbone", "require", "./build_views", "./safebind", "./bulk_save", "./continuum_view", "./has_parent", "./view_state", "mapper/1d/linear_mapper", "mapper/1d/categorical_mapper", "mapper/2d/grid_mapper", "renderer/properties", "tool/active_tool_manager"], function(_, Backbone, require, build_views, safebind, bulk_save, ContinuumView, HasParent, ViewState, LinearMapper, CategoricalMapper, GridMapper, Properties, ActiveToolManager) {
-    var LEVELS, Plot, PlotView, Plots, delay_animation, line_properties, text_properties, throttle_animation;
+    var LEVELS, Plot, PlotView, Plots, delay_animation, line_properties, text_properties, throttle_animation, _ref, _ref1, _ref2;
     line_properties = Properties.line_properties;
     text_properties = Properties.text_properties;
     LEVELS = ['image', 'underlay', 'glyph', 'overlay', 'annotation', 'tool'];
@@ -14995,7 +15009,8 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       function PlotView() {
         this._mousemove = __bind(this._mousemove, this);
         this._mousedown = __bind(this._mousedown, this);
-        return PlotView.__super__.constructor.apply(this, arguments);
+        _ref = PlotView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       PlotView.prototype.className = "bokeh plotview";
@@ -15013,22 +15028,22 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype._mousedown = function(e) {
-        var f, _i, _len, _ref, _results;
-        _ref = this.mousedownCallbacks;
+        var f, _i, _len, _ref1, _results;
+        _ref1 = this.mousedownCallbacks;
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          f = _ref[_i];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          f = _ref1[_i];
           _results.push(f(e, e.layerX, e.layerY));
         }
         return _results;
       };
 
       PlotView.prototype._mousemove = function(e) {
-        var f, _i, _len, _ref, _results;
-        _ref = this.moveCallbacks;
+        var f, _i, _len, _ref1, _results;
+        _ref1 = this.moveCallbacks;
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          f = _ref[_i];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          f = _ref1[_i];
           _results.push(f(e, e.layerX, e.layerY));
         }
         return _results;
@@ -15063,31 +15078,31 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.initialize = function(options) {
-        var level, xmapper_type, ymapper_type, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+        var level, xmapper_type, ymapper_type, _i, _len, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
         PlotView.__super__.initialize.call(this, _.defaults(options, this.default_options));
         this.throttled_render = throttle_animation(this.render, 15);
         this.throttled_render_canvas = throttle_animation(this.render_canvas, 15);
         this.outline_props = new line_properties(this, {}, 'outline_');
         this.title_props = new text_properties(this, {}, 'title_');
         this.view_state = new ViewState({
-          canvas_width: (_ref = options.canvas_width) != null ? _ref : this.mget('canvas_width'),
-          canvas_height: (_ref1 = options.canvas_height) != null ? _ref1 : this.mget('canvas_height'),
-          x_offset: (_ref2 = options.x_offset) != null ? _ref2 : this.mget('x_offset'),
-          y_offset: (_ref3 = options.y_offset) != null ? _ref3 : this.mget('y_offset'),
-          outer_width: (_ref4 = options.outer_width) != null ? _ref4 : this.mget('outer_width'),
-          outer_height: (_ref5 = options.outer_height) != null ? _ref5 : this.mget('outer_height'),
-          min_border_top: (_ref6 = (_ref7 = options.min_border_top) != null ? _ref7 : this.mget('min_border_top')) != null ? _ref6 : this.mget('min_border'),
-          min_border_bottom: (_ref8 = (_ref9 = options.min_border_bottom) != null ? _ref9 : this.mget('min_border_bottom')) != null ? _ref8 : this.mget('min_border'),
-          min_border_left: (_ref10 = (_ref11 = options.min_border_left) != null ? _ref11 : this.mget('min_border_left')) != null ? _ref10 : this.mget('min_border'),
-          min_border_right: (_ref12 = (_ref13 = options.min_border_right) != null ? _ref13 : this.mget('min_border_right')) != null ? _ref12 : this.mget('min_border'),
+          canvas_width: (_ref1 = options.canvas_width) != null ? _ref1 : this.mget('canvas_width'),
+          canvas_height: (_ref2 = options.canvas_height) != null ? _ref2 : this.mget('canvas_height'),
+          x_offset: (_ref3 = options.x_offset) != null ? _ref3 : this.mget('x_offset'),
+          y_offset: (_ref4 = options.y_offset) != null ? _ref4 : this.mget('y_offset'),
+          outer_width: (_ref5 = options.outer_width) != null ? _ref5 : this.mget('outer_width'),
+          outer_height: (_ref6 = options.outer_height) != null ? _ref6 : this.mget('outer_height'),
+          min_border_top: (_ref7 = (_ref8 = options.min_border_top) != null ? _ref8 : this.mget('min_border_top')) != null ? _ref7 : this.mget('min_border'),
+          min_border_bottom: (_ref9 = (_ref10 = options.min_border_bottom) != null ? _ref10 : this.mget('min_border_bottom')) != null ? _ref9 : this.mget('min_border'),
+          min_border_left: (_ref11 = (_ref12 = options.min_border_left) != null ? _ref12 : this.mget('min_border_left')) != null ? _ref11 : this.mget('min_border'),
+          min_border_right: (_ref13 = (_ref14 = options.min_border_right) != null ? _ref14 : this.mget('min_border_right')) != null ? _ref13 : this.mget('min_border'),
           requested_border_top: 0,
           requested_border_bottom: 0,
           requested_border_left: 0,
           requested_border_right: 0
         });
-        this.hidpi = (_ref14 = options.hidpi) != null ? _ref14 : this.mget('hidpi');
-        this.x_range = (_ref15 = options.x_range) != null ? _ref15 : this.mget_obj('x_range');
-        this.y_range = (_ref16 = options.y_range) != null ? _ref16 : this.mget_obj('y_range');
+        this.hidpi = (_ref15 = options.hidpi) != null ? _ref15 : this.mget('hidpi');
+        this.x_range = (_ref16 = options.x_range) != null ? _ref16 : this.mget_obj('x_range');
+        this.y_range = (_ref17 = options.y_range) != null ? _ref17 : this.mget_obj('y_range');
         xmapper_type = LinearMapper.Model;
         if (this.x_range.type === "FactorRange") {
           xmapper_type = CategoricalMapper.Model;
@@ -15168,7 +15183,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.map_from_screen = function(sx, sy, units) {
-        var dx, dy, x, y, _ref;
+        var dx, dy, x, y, _ref1;
         if (_.isArray(sx)) {
           dx = sx.slice(0);
         } else {
@@ -15187,7 +15202,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
           x = sx;
           y = sy;
         } else {
-          _ref = this.mapper.v_map_from_target(sx, sy), x = _ref[0], y = _ref[1];
+          _ref1 = this.mapper.v_map_from_target(sx, sy), x = _ref1[0], y = _ref1[1];
         }
         return [x, y];
       };
@@ -15237,22 +15252,19 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.bind_bokeh_events = function() {
-        safebind(this, this.view_state, 'change', (function(_this) {
-          return function() {
-            _this.request_render_canvas();
-            return _this.request_render();
-          };
-        })(this));
+        var _this = this;
+        safebind(this, this.view_state, 'change', function() {
+          _this.request_render_canvas();
+          return _this.request_render();
+        });
         safebind(this, this.x_range, 'change', this.request_render);
         safebind(this, this.y_range, 'change', this.request_render);
         safebind(this, this.model, 'change:renderers', this.build_levels);
         safebind(this, this.model, 'change:tool', this.build_levels);
         safebind(this, this.model, 'change', this.request_render);
-        return safebind(this, this.model, 'destroy', (function(_this) {
-          return function() {
-            return _this.remove();
-          };
-        })(this));
+        return safebind(this, this.model, 'destroy', function() {
+          return _this.remove();
+        });
       };
 
       PlotView.prototype.render_init = function() {
@@ -15322,7 +15334,7 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.render = function(force) {
-        var have_new_mapper_state, hpadding, k, level, pr, renderers, sx, sy, sym, th, title, v, xms, yms, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+        var have_new_mapper_state, hpadding, k, level, pr, renderers, sx, sy, sym, th, title, v, xms, yms, _i, _j, _len, _len1, _ref1, _ref2, _ref3;
         PlotView.__super__.render.call(this);
         if (this.initial_range_info == null) {
           this.set_initial_range();
@@ -15333,9 +15345,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
           left: 0,
           right: 0
         };
-        _ref = ['image', 'underlay', 'glyph', 'overlay', 'annotation', 'tool'];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          level = _ref[_i];
+        _ref1 = ['image', 'underlay', 'glyph', 'overlay', 'annotation', 'tool'];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          level = _ref1[_i];
           renderers = this.levels[level];
           for (k in renderers) {
             v = renderers[k];
@@ -15366,9 +15378,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
           this.requested_padding['bottom'] = hpadding;
         }
         this.is_paused = true;
-        _ref1 = this.requested_padding;
-        for (k in _ref1) {
-          v = _ref1[k];
+        _ref2 = this.requested_padding;
+        for (k in _ref2) {
+          v = _ref2[k];
           this.view_state.set("requested_border_" + k, v);
         }
         this.is_paused = false;
@@ -15393,9 +15405,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
         this.ctx.rect(this.view_state.get('border_left'), this.view_state.get('border_top'), this.view_state.get('inner_width'), this.view_state.get('inner_height'));
         this.ctx.clip();
         this.ctx.beginPath();
-        _ref2 = ['image', 'underlay', 'glyph'];
-        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-          level = _ref2[_j];
+        _ref3 = ['image', 'underlay', 'glyph'];
+        for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+          level = _ref3[_j];
           renderers = this.levels[level];
           for (k in renderers) {
             v = renderers[k];
@@ -15413,11 +15425,11 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotView.prototype.render_overlays = function(have_new_mapper_state) {
-        var k, level, renderers, v, _i, _len, _ref, _results;
-        _ref = ['overlay', 'annotation', 'tool'];
+        var k, level, renderers, v, _i, _len, _ref1, _results;
+        _ref1 = ['overlay', 'annotation', 'tool'];
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          level = _ref[_i];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          level = _ref1[_i];
           renderers = this.levels[level];
           _results.push((function() {
             var _results1;
@@ -15439,7 +15451,8 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       __extends(Plot, _super);
 
       function Plot() {
-        return Plot.__super__.constructor.apply(this, arguments);
+        _ref1 = Plot.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       Plot.prototype.type = 'Plot';
@@ -15502,7 +15515,8 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       __extends(Plots, _super);
 
       function Plots() {
-        return Plots.__super__.constructor.apply(this, arguments);
+        _ref2 = Plots.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       Plots.prototype.model = Plot;
@@ -15519,8 +15533,9 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
 
 }).call(this);
 
-//# sourceMappingURL=plot.js.map
-;
+/*
+//@ sourceMappingURL=plot.js.map
+*/;
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
@@ -15561,7 +15576,6 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
       };
 
       PlotContextView.prototype.events = {
-        'click .plotclose': 'removeplot',
         'click .closeall': 'closeall'
       };
 
@@ -15623,7 +15637,6 @@ if ( typeof window === "object" && typeof window.document === "object" ) {
           view = this.views[modelref.id];
           node = $("<div class='jsp' data-plot_num='" + index + "'></div>");
           this.$el.append(node);
-          node.append($("<a class='plotclose'>[close]</a>"));
           node.append(view.el);
         }
         _.defer(function() {
@@ -20378,46 +20391,10 @@ if (typeof define === 'function' && define.amd) {
 
       QuadView.prototype._properties = ['line', 'fill'];
 
-      QuadView.prototype._set_data = function() {
-        var i;
-        this.index = rbush();
-        return this.index.load((function() {
-          var _i, _ref1, _results;
-          _results = [];
-          for (i = _i = 0, _ref1 = this.left.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
-            _results.push([
-              this.left[i], this.bottom[i], this.right[i], this.top[i], {
-                'i': i
-              }
-            ]);
-          }
-          return _results;
-        }).call(this));
-      };
-
       QuadView.prototype._map_data = function() {
         var _ref1, _ref2;
         _ref1 = this.plot_view.map_to_screen(this.left, this.glyph_props.left.units, this.top, this.glyph_props.top.units), this.sx0 = _ref1[0], this.sy0 = _ref1[1];
         return _ref2 = this.plot_view.map_to_screen(this.right, this.glyph_props.right.units, this.bottom, this.glyph_props.bottom.units), this.sx1 = _ref2[0], this.sy1 = _ref2[1], _ref2;
-      };
-
-      QuadView.prototype._mask_data = function() {
-        var oh, ow, vr, x, x0, x1, y0, y1, _ref1, _ref2;
-        ow = this.plot_view.view_state.get('outer_width');
-        oh = this.plot_view.view_state.get('outer_height');
-        _ref1 = this.plot_view.xmapper.v_map_from_target([0, ow]), x0 = _ref1[0], x1 = _ref1[1];
-        vr = this.plot_view.view_state.get('inner_range_vertical');
-        _ref2 = this.plot_view.ymapper.v_map_from_target([0, ow]), y0 = _ref2[0], y1 = _ref2[1];
-        return (function() {
-          var _i, _len, _ref3, _results;
-          _ref3 = this.index.search([x0, y0, x1, y1]);
-          _results = [];
-          for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-            x = _ref3[_i];
-            _results.push(x[4].i);
-          }
-          return _results;
-        }).call(this);
       };
 
       QuadView.prototype._render = function(ctx, indices, glyph_props, sx0, sx1, sy0, sy1) {
@@ -20454,6 +20431,20 @@ if (typeof define === 'function' && define.amd) {
           }
         }
         return _results;
+      };
+
+      QuadView.prototype._hit_point = function(geometry) {
+        var hits, i, sx, sy, vx, vy, _i, _ref1, _ref2;
+        _ref1 = [geometry.vx, geometry.vy], vx = _ref1[0], vy = _ref1[1];
+        sx = this.plot_view.view_state.vx_to_sx(vx);
+        sy = this.plot_view.view_state.vy_to_sy(vy);
+        hits = [];
+        for (i = _i = 0, _ref2 = this.sx0.length; 0 <= _ref2 ? _i < _ref2 : _i > _ref2; i = 0 <= _ref2 ? ++_i : --_i) {
+          if (sx >= this.sx0[i] && sx <= this.sx1[i] && sy >= this.sy0[i] && sy < this.sy1[i]) {
+            hits.push(i);
+          }
+        }
+        return hits;
       };
 
       QuadView.prototype.draw_legend = function(ctx, x0, x1, y0, y1) {
@@ -22667,12 +22658,13 @@ if (typeof define === 'function' && define.amd) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('renderer/guide/categorical_axis',["backbone", "./axis", "range/factor_range", "ticking/categorical_ticker", "ticking/categorical_tick_formatter"], function(Backbone, Axis, FactorRange, CategoricalTicker, CategoricalTickFormatter) {
-    var CategoricalAxes, CategoricalAxis, CategoricalAxisView;
+    var CategoricalAxes, CategoricalAxis, CategoricalAxisView, _ref, _ref1, _ref2;
     CategoricalAxisView = (function(_super) {
       __extends(CategoricalAxisView, _super);
 
       function CategoricalAxisView() {
-        return CategoricalAxisView.__super__.constructor.apply(this, arguments);
+        _ref = CategoricalAxisView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       return CategoricalAxisView;
@@ -22682,28 +22674,33 @@ if (typeof define === 'function' && define.amd) {
       __extends(CategoricalAxis, _super);
 
       function CategoricalAxis() {
-        return CategoricalAxis.__super__.constructor.apply(this, arguments);
+        _ref1 = CategoricalAxis.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       CategoricalAxis.prototype.default_view = CategoricalAxisView;
 
       CategoricalAxis.prototype.type = 'CategoricalAxis';
 
-      CategoricalAxis.prototype.initialize = function(attrs, objects) {
-        CategoricalAxis.__super__.initialize.call(this, attrs, objects);
+      CategoricalAxis.prototype.dinitialize = function(attrs, objects) {
+        CategoricalAxis.__super__.dinitialize.call(this, attrs, objects);
         if (this.get_obj('ticker') == null) {
-          this.set_obj('ticker', CategoricalTicker.Collection.create());
+          this.set_obj('ticker', CategoricalTicker.Collection.create({
+            doc: this.get('doc')
+          }));
         }
         if (this.get_obj('formatter') == null) {
-          return this.set_obj('formatter', CategoricalTickFormatter.Collection.create());
+          return this.set_obj('formatter', CategoricalTickFormatter.Collection.create({
+            doc: this.get('doc')
+          }));
         }
       };
 
       CategoricalAxis.prototype._bounds = function() {
-        var i, range_bounds, ranges, user_bounds, _ref;
+        var i, range_bounds, ranges, user_bounds, _ref2;
         i = this.get('dimension');
         ranges = [this.get_obj('plot').get_obj('x_range'), this.get_obj('plot').get_obj('y_range')];
-        user_bounds = (_ref = this.get('bounds')) != null ? _ref : 'auto';
+        user_bounds = (_ref2 = this.get('bounds')) != null ? _ref2 : 'auto';
         if (user_bounds !== 'auto') {
           console.log("Categorical Axes only support user_bounds='auto', ignoring");
         }
@@ -22718,7 +22715,8 @@ if (typeof define === 'function' && define.amd) {
       __extends(CategoricalAxes, _super);
 
       function CategoricalAxes() {
-        return CategoricalAxes.__super__.constructor.apply(this, arguments);
+        _ref2 = CategoricalAxes.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       CategoricalAxes.prototype.model = CategoricalAxis;
@@ -22735,8 +22733,9 @@ if (typeof define === 'function' && define.amd) {
 
 }).call(this);
 
-//# sourceMappingURL=categorical_axis.js.map
-;
+/*
+//@ sourceMappingURL=categorical_axis.js.map
+*/;
 (function() {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -23093,9 +23092,10 @@ if (typeof define === 'function' && define.amd) {
       };
 
       CompositeTicker.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
-        var best_ticker;
+        var best_ticker, ticks;
         best_ticker = this.get_best_ticker(data_low, data_high, desired_n_ticks);
-        return best_ticker.get_ticks_no_defaults(data_low, data_high, desired_n_ticks);
+        ticks = best_ticker.get_ticks_no_defaults(data_low, data_high, desired_n_ticks);
+        return ticks;
       };
 
       CompositeTicker.prototype.defaults = function() {
@@ -23407,14 +23407,140 @@ if (typeof define === 'function' && define.amd) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('ticking/datetime_ticker',["underscore", "ticking/adaptive_ticker", "ticking/composite_ticker", "ticking/days_ticker", "ticking/months_ticker", "ticking/util"], function(_, AdaptiveTicker, CompositeTicker, DaysTicker, MonthsTicker, util) {
-    var DatetimeTicker, DatetimeTickers, ONE_HOUR, ONE_MILLI, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR, _ref, _ref1;
+  define('ticking/basic_ticker',["ticking/adaptive_ticker"], function(AdaptiveTicker) {
+    var BasicTicker, BasicTickers;
+    BasicTicker = (function(_super) {
+      __extends(BasicTicker, _super);
+
+      function BasicTicker() {
+        return BasicTicker.__super__.constructor.apply(this, arguments);
+      }
+
+      BasicTicker.prototype.type = 'BasicTicker';
+
+      BasicTicker.prototype.initialize = function(attrs, options) {
+        return BasicTicker.__super__.initialize.call(this, attrs, options);
+      };
+
+      BasicTicker.prototype.defaults = function() {
+        return _.extend(BasicTicker.__super__.defaults.call(this), {
+          mantissas: [1, 2, 5]
+        });
+      };
+
+      return BasicTicker;
+
+    })(AdaptiveTicker.Model);
+    BasicTickers = (function(_super) {
+      __extends(BasicTickers, _super);
+
+      function BasicTickers() {
+        return BasicTickers.__super__.constructor.apply(this, arguments);
+      }
+
+      BasicTickers.prototype.model = BasicTicker;
+
+      return BasicTickers;
+
+    })(Backbone.Collection);
+    return {
+      "Model": BasicTicker,
+      "Collection": new BasicTickers()
+    };
+  });
+
+}).call(this);
+
+//# sourceMappingURL=basic_ticker.js.map
+;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('ticking/years_ticker',["underscore", "backbone", "ticking/basic_ticker", "ticking/single_interval_ticker", "ticking/util"], function(_, Backbone, BasicTicker, SingleIntervalTicker, util) {
+    var ONE_YEAR, YearsTicker, YearsTickers, last_year_no_later_than, _ref, _ref1;
+    last_year_no_later_than = util.last_year_no_later_than;
+    ONE_YEAR = util.ONE_YEAR;
+    YearsTicker = (function(_super) {
+      __extends(YearsTicker, _super);
+
+      function YearsTicker() {
+        _ref = YearsTicker.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      YearsTicker.prototype.type = 'YearsTicker';
+
+      YearsTicker.prototype.initialize = function(attrs, options) {
+        YearsTicker.__super__.initialize.call(this, attrs, options);
+        this.set('interval', ONE_YEAR);
+        return this.basic_ticker = new BasicTicker.Model();
+      };
+
+      YearsTicker.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
+        var all_ticks, end_year, start_year, ticks_in_range, year, years;
+        start_year = last_year_no_later_than(new Date(data_low)).getUTCFullYear();
+        end_year = last_year_no_later_than(new Date(data_high)).getUTCFullYear();
+        years = this.basic_ticker.get_ticks_no_defaults(start_year, end_year, desired_n_ticks);
+        all_ticks = (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = years.length; _i < _len; _i++) {
+            year = years[_i];
+            _results.push(Date.UTC(year, 0, 1));
+          }
+          return _results;
+        })();
+        ticks_in_range = _.filter(all_ticks, (function(tick) {
+          return (data_low <= tick && tick <= data_high);
+        }));
+        return ticks_in_range;
+      };
+
+      YearsTicker.prototype.defaults = function() {
+        return _.extend(YearsTicker.__super__.defaults.call(this), {
+          toString_properties: ['years']
+        });
+      };
+
+      return YearsTicker;
+
+    })(SingleIntervalTicker.Model);
+    YearsTickers = (function(_super) {
+      __extends(YearsTickers, _super);
+
+      function YearsTickers() {
+        _ref1 = YearsTickers.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      YearsTickers.prototype.model = YearsTicker;
+
+      return YearsTickers;
+
+    })(Backbone.Collection);
+    return {
+      "Model": YearsTicker,
+      "Collection": new YearsTickers()
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=years_ticker.js.map
+*/;
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('ticking/datetime_ticker',["underscore", "ticking/adaptive_ticker", "ticking/composite_ticker", "ticking/days_ticker", "ticking/months_ticker", "ticking/years_ticker", "ticking/util"], function(_, AdaptiveTicker, CompositeTicker, DaysTicker, MonthsTicker, YearsTicker, util) {
+    var DatetimeTicker, DatetimeTickers, ONE_HOUR, ONE_MILLI, ONE_MINUTE, ONE_MONTH, ONE_SECOND, _ref, _ref1;
     ONE_MILLI = util.ONE_MILLI;
     ONE_SECOND = util.ONE_SECOND;
     ONE_MINUTE = util.ONE_MINUTE;
     ONE_HOUR = util.ONE_HOUR;
     ONE_MONTH = util.ONE_MONTH;
-    ONE_YEAR = util.ONE_YEAR;
     DatetimeTicker = (function(_super) {
       __extends(DatetimeTicker, _super);
 
@@ -23424,10 +23550,6 @@ if (typeof define === 'function' && define.amd) {
       }
 
       DatetimeTicker.prototype.type = 'DatetimeTicker';
-
-      DatetimeTicker.prototype.initialize = function(attrs, options) {
-        return DatetimeTicker.__super__.initialize.call(this, attrs, options);
-      };
 
       DatetimeTicker.prototype.defaults = function() {
         return _.extend(DatetimeTicker.__super__.defaults.call(this), {
@@ -23456,19 +23578,14 @@ if (typeof define === 'function' && define.amd) {
             }), new DaysTicker.Model({
               days: [1, 15]
             }), new MonthsTicker.Model({
-              months: _.range(0, 12)
+              months: _.range(0, 12, 1)
             }), new MonthsTicker.Model({
               months: _.range(0, 12, 2)
             }), new MonthsTicker.Model({
               months: _.range(0, 12, 4)
             }), new MonthsTicker.Model({
               months: _.range(0, 12, 6)
-            }), new AdaptiveTicker.Model({
-              mantissas: [1, 2, 5],
-              base: 10,
-              min_interval: ONE_YEAR,
-              max_interval: Infinity
-            })
+            }), new YearsTicker.Model({})
           ]
         });
       };
@@ -24111,7 +24228,7 @@ define("sprintf", (function (global) {
       };
 
       DatetimeTickFormatter.prototype.format = function(ticks, num_labels, char_width, fill_ratio, ticker) {
-        var dt, error, fmt, format, formats, good_formats, hybrid_handled, i, labels, next_format, next_ndx, r, resol, resol_ndx, s, span, ss, t, time_tuple_ndx_for_resol, tm, widths, _i, _j, _k, _len, _len1, _ref1, _ref2, _ref3;
+        var error, fmt, format, formats, good_formats, hybrid_handled, i, labels, next_format, next_ndx, r, resol, resol_ndx, s, span, ss, t, time_tuple_ndx_for_resol, tm, widths, _i, _j, _k, _len, _len1, _ref1, _ref2, _ref3;
         if (num_labels == null) {
           num_labels = null;
         }
@@ -24163,7 +24280,6 @@ define("sprintf", (function (global) {
         for (_k = 0, _len1 = ticks.length; _k < _len1; _k++) {
           t = ticks[_k];
           try {
-            dt = Date(t);
             tm = _array(t);
             s = _strftime(t, format);
           } catch (_error) {
@@ -24241,12 +24357,13 @@ define("sprintf", (function (global) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('renderer/guide/datetime_axis',["backbone", "./axis", "ticking/datetime_ticker", "ticking/datetime_tick_formatter"], function(Backbone, Axis, DatetimeTicker, DatetimeTickFormatter) {
-    var DatetimeAxes, DatetimeAxis, DatetimeAxisView;
+    var DatetimeAxes, DatetimeAxis, DatetimeAxisView, _ref, _ref1, _ref2;
     DatetimeAxisView = (function(_super) {
       __extends(DatetimeAxisView, _super);
 
       function DatetimeAxisView() {
-        return DatetimeAxisView.__super__.constructor.apply(this, arguments);
+        _ref = DatetimeAxisView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       return DatetimeAxisView;
@@ -24256,20 +24373,21 @@ define("sprintf", (function (global) {
       __extends(DatetimeAxis, _super);
 
       function DatetimeAxis() {
-        return DatetimeAxis.__super__.constructor.apply(this, arguments);
+        _ref1 = DatetimeAxis.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       DatetimeAxis.prototype.default_view = DatetimeAxisView;
 
       DatetimeAxis.prototype.type = 'DatetimeAxis';
 
-      DatetimeAxis.prototype.initialize = function(attrs, objects) {
-        DatetimeAxis.__super__.initialize.call(this, attrs, objects);
+      DatetimeAxis.prototype.dinitialize = function(attrs, objects) {
+        DatetimeAxis.__super__.dinitialize.call(this, attrs, objects);
         if (this.get_obj('ticker') == null) {
-          this.set_obj('ticker', DatetimeTicker.Collection.create());
+          this.set_obj('ticker', new DatetimeTicker.Model());
         }
         if (this.get_obj('formatter') == null) {
-          return this.set_obj('formatter', DatetimeTickFormatter.Collection.create());
+          return this.set_obj('formatter', new DatetimeTickFormatter.Model());
         }
       };
 
@@ -24280,7 +24398,8 @@ define("sprintf", (function (global) {
       __extends(DatetimeAxes, _super);
 
       function DatetimeAxes() {
-        return DatetimeAxes.__super__.constructor.apply(this, arguments);
+        _ref2 = DatetimeAxes.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       DatetimeAxes.prototype.model = DatetimeAxis;
@@ -24297,8 +24416,9 @@ define("sprintf", (function (global) {
 
 }).call(this);
 
-//# sourceMappingURL=datetime_axis.js.map
-;
+/*
+//@ sourceMappingURL=datetime_axis.js.map
+*/;
 (function() {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -24474,56 +24594,6 @@ define("sprintf", (function (global) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('ticking/basic_ticker',["ticking/adaptive_ticker"], function(AdaptiveTicker) {
-    var BasicTicker, BasicTickers;
-    BasicTicker = (function(_super) {
-      __extends(BasicTicker, _super);
-
-      function BasicTicker() {
-        return BasicTicker.__super__.constructor.apply(this, arguments);
-      }
-
-      BasicTicker.prototype.type = 'BasicTicker';
-
-      BasicTicker.prototype.initialize = function(attrs, options) {
-        return BasicTicker.__super__.initialize.call(this, attrs, options);
-      };
-
-      BasicTicker.prototype.defaults = function() {
-        return _.extend(BasicTicker.__super__.defaults.call(this), {
-          mantissas: [1, 2, 5]
-        });
-      };
-
-      return BasicTicker;
-
-    })(AdaptiveTicker.Model);
-    BasicTickers = (function(_super) {
-      __extends(BasicTickers, _super);
-
-      function BasicTickers() {
-        return BasicTickers.__super__.constructor.apply(this, arguments);
-      }
-
-      BasicTickers.prototype.model = BasicTicker;
-
-      return BasicTickers;
-
-    })(Backbone.Collection);
-    return {
-      "Model": BasicTicker,
-      "Collection": new BasicTickers()
-    };
-  });
-
-}).call(this);
-
-//# sourceMappingURL=basic_ticker.js.map
-;
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   define('ticking/basic_tick_formatter',["underscore", "backbone", "common/has_properties"], function(_, Backbone, HasProperties) {
     var BasicTickFormatter, BasicTickFormatters;
     BasicTickFormatter = (function(_super) {
@@ -24660,12 +24730,13 @@ define("sprintf", (function (global) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('renderer/guide/linear_axis',["underscore", "backbone", "./axis", "ticking/basic_ticker", "ticking/basic_tick_formatter"], function(_, Backbone, Axis, BasicTicker, BasicTickFormatter) {
-    var LinearAxes, LinearAxis, LinearAxisView;
+    var LinearAxes, LinearAxis, LinearAxisView, _ref, _ref1, _ref2;
     LinearAxisView = (function(_super) {
       __extends(LinearAxisView, _super);
 
       function LinearAxisView() {
-        return LinearAxisView.__super__.constructor.apply(this, arguments);
+        _ref = LinearAxisView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       return LinearAxisView;
@@ -24675,20 +24746,21 @@ define("sprintf", (function (global) {
       __extends(LinearAxis, _super);
 
       function LinearAxis() {
-        return LinearAxis.__super__.constructor.apply(this, arguments);
+        _ref1 = LinearAxis.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       LinearAxis.prototype.default_view = LinearAxisView;
 
       LinearAxis.prototype.type = 'LinearAxis';
 
-      LinearAxis.prototype.initialize = function(attrs, objects) {
-        LinearAxis.__super__.initialize.call(this, attrs, objects);
+      LinearAxis.prototype.dinitialize = function(attrs, objects) {
+        LinearAxis.__super__.dinitialize.call(this, attrs, objects);
         if (this.get_obj('ticker') == null) {
-          this.set_obj('ticker', BasicTicker.Collection.create());
+          this.set_obj('ticker', BasicTicker.Model());
         }
         if (this.get_obj('formatter') == null) {
-          return this.set_obj('formatter', BasicTickFormatter.Collection.create());
+          return this.set_obj('formatter', BasicTickFormatter.Model());
         }
       };
 
@@ -24699,7 +24771,8 @@ define("sprintf", (function (global) {
       __extends(LinearAxes, _super);
 
       function LinearAxes() {
-        return LinearAxes.__super__.constructor.apply(this, arguments);
+        _ref2 = LinearAxes.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       LinearAxes.prototype.model = LinearAxis;
@@ -24716,8 +24789,9 @@ define("sprintf", (function (global) {
 
 }).call(this);
 
-//# sourceMappingURL=linear_axis.js.map
-;
+/*
+//@ sourceMappingURL=linear_axis.js.map
+*/;
 (function() {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -26604,14 +26678,15 @@ define("sprintf", (function (global) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('tool/pan_tool',["underscore", "backbone", "./tool", "./event_generators"], function(_, Backbone, Tool, EventGenerators) {
-    var PanTool, PanToolView, PanTools, TwoPointEventGenerator;
+    var PanTool, PanToolView, PanTools, TwoPointEventGenerator, _ref, _ref1, _ref2;
     TwoPointEventGenerator = EventGenerators.TwoPointEventGenerator;
     window.render_count = 0;
     PanToolView = (function(_super) {
       __extends(PanToolView, _super);
 
       function PanToolView() {
-        return PanToolView.__super__.constructor.apply(this, arguments);
+        _ref = PanToolView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       PanToolView.prototype.initialize = function(options) {
@@ -26640,33 +26715,48 @@ define("sprintf", (function (global) {
       };
 
       PanToolView.prototype.mouse_coords = function(e, x, y) {
-        var x_, y_, _ref;
-        _ref = [this.plot_view.view_state.sx_to_vx(x), this.plot_view.view_state.sy_to_vy(y)], x_ = _ref[0], y_ = _ref[1];
+        var x_, y_, _ref1;
+        _ref1 = [this.plot_view.view_state.sx_to_vx(x), this.plot_view.view_state.sy_to_vy(y)], x_ = _ref1[0], y_ = _ref1[1];
         return [x_, y_];
       };
 
       PanToolView.prototype._set_base_point = function(e) {
-        var _ref;
-        _ref = this.mouse_coords(e, e.bokehX, e.bokehY), this.x = _ref[0], this.y = _ref[1];
+        var _ref1;
+        _ref1 = this.mouse_coords(e, e.bokehX, e.bokehY), this.x = _ref1[0], this.y = _ref1[1];
         return null;
       };
 
       PanToolView.prototype._drag = function(e) {
-        var pan_info, sx_high, sx_low, sy_high, sy_low, x, xdiff, xend, xr, xstart, y, ydiff, yend, yr, ystart, _ref, _ref1;
-        _ref = this.mouse_coords(e, e.bokehX, e.bokehY), x = _ref[0], y = _ref[1];
+        var dims, pan_info, sdx, sdy, sx_high, sx_low, sy_high, sy_low, x, xdiff, xend, xr, xstart, y, ydiff, yend, yr, ystart, _ref1, _ref2;
+        _ref1 = this.mouse_coords(e, e.bokehX, e.bokehY), x = _ref1[0], y = _ref1[1];
         xdiff = x - this.x;
         ydiff = y - this.y;
-        _ref1 = [x, y], this.x = _ref1[0], this.y = _ref1[1];
+        _ref2 = [x, y], this.x = _ref2[0], this.y = _ref2[1];
         xr = this.plot_view.view_state.get('inner_range_horizontal');
         sx_low = xr.get('start') - xdiff;
         sx_high = xr.get('end') - xdiff;
         yr = this.plot_view.view_state.get('inner_range_vertical');
         sy_low = yr.get('start') - ydiff;
         sy_high = yr.get('end') - ydiff;
-        xstart = this.plot_view.xmapper.map_from_target(sx_low);
-        xend = this.plot_view.xmapper.map_from_target(sx_high);
-        ystart = this.plot_view.ymapper.map_from_target(sy_low);
-        yend = this.plot_view.ymapper.map_from_target(sy_high);
+        dims = this.mget('dimensions');
+        if (dims.indexOf('width') > -1) {
+          xstart = this.plot_view.xmapper.map_from_target(sx_low);
+          xend = this.plot_view.xmapper.map_from_target(sx_high);
+          sdx = -xdiff;
+        } else {
+          xstart = this.plot_view.xmapper.map_from_target(xr.get('start'));
+          xend = this.plot_view.xmapper.map_from_target(xr.get('end'));
+          sdx = 0;
+        }
+        if (dims.indexOf('height') > -1) {
+          ystart = this.plot_view.ymapper.map_from_target(sy_low);
+          yend = this.plot_view.ymapper.map_from_target(sy_high);
+          sdy = ydiff;
+        } else {
+          ystart = this.plot_view.ymapper.map_from_target(yr.get('start'));
+          yend = this.plot_view.ymapper.map_from_target(yr.get('end'));
+          sdy = 0;
+        }
         pan_info = {
           xr: {
             start: xstart,
@@ -26676,8 +26766,8 @@ define("sprintf", (function (global) {
             start: ystart,
             end: yend
           },
-          sdx: -xdiff,
-          sdy: ydiff
+          sdx: sdx,
+          sdy: sdy
         };
         this.plot_view.update_range(pan_info);
         return null;
@@ -26690,7 +26780,8 @@ define("sprintf", (function (global) {
       __extends(PanTool, _super);
 
       function PanTool() {
-        return PanTool.__super__.constructor.apply(this, arguments);
+        _ref1 = PanTool.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       PanTool.prototype.default_view = PanToolView;
@@ -26714,7 +26805,8 @@ define("sprintf", (function (global) {
       __extends(PanTools, _super);
 
       function PanTools() {
-        return PanTools.__super__.constructor.apply(this, arguments);
+        _ref2 = PanTools.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       PanTools.prototype.model = PanTool;
@@ -26731,8 +26823,9 @@ define("sprintf", (function (global) {
 
 }).call(this);
 
-//# sourceMappingURL=pan_tool.js.map
-;
+/*
+//@ sourceMappingURL=pan_tool.js.map
+*/;
 /* =========================================================
  * bootstrap-modal.js v2.0.4
  * http://twitter.github.com/bootstrap/javascript.html#modals
@@ -27291,13 +27384,14 @@ define('modal',["jquery"], function($) {
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define('tool/wheel_zoom_tool',["underscore", "backbone", "./tool", "./event_generators"], function(_, Backbone, Tool, EventGenerators) {
-    var OnePointWheelEventGenerator, WheelZoomTool, WheelZoomToolView, WheelZoomTools;
+    var OnePointWheelEventGenerator, WheelZoomTool, WheelZoomToolView, WheelZoomTools, _ref, _ref1, _ref2;
     OnePointWheelEventGenerator = EventGenerators.OnePointWheelEventGenerator;
     WheelZoomToolView = (function(_super) {
       __extends(WheelZoomToolView, _super);
 
       function WheelZoomToolView() {
-        return WheelZoomToolView.__super__.constructor.apply(this, arguments);
+        _ref = WheelZoomToolView.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       WheelZoomToolView.prototype.initialize = function(options) {
@@ -27315,17 +27409,17 @@ define('modal',["jquery"], function($) {
       };
 
       WheelZoomToolView.prototype.mouse_coords = function(e, x, y) {
-        var x_, y_, _ref;
-        _ref = [this.plot_view.view_state.sx_to_vx(x), this.plot_view.view_state.sy_to_vy(y)], x_ = _ref[0], y_ = _ref[1];
+        var x_, y_, _ref1;
+        _ref1 = [this.plot_view.view_state.sx_to_vx(x), this.plot_view.view_state.sy_to_vy(y)], x_ = _ref1[0], y_ = _ref1[1];
         return [x_, y_];
       };
 
       WheelZoomToolView.prototype._zoom = function(e) {
-        var delta, factor, screenX, screenY, speed, sx_high, sx_low, sy_high, sy_low, x, xend, xr, xstart, y, yend, yr, ystart, zoom_info, _ref, _ref1, _ref2;
+        var delta, dims, factor, screenX, screenY, speed, sx_high, sx_low, sy_high, sy_low, x, xend, xr, xstart, y, yend, yr, ystart, zoom_info, _ref1, _ref2, _ref3, _ref4, _ref5;
         delta = e.originalEvent.wheelDelta;
         screenX = e.bokehX;
         screenY = e.bokehY;
-        _ref = this.mouse_coords(e, screenX, screenY), x = _ref[0], y = _ref[1];
+        _ref1 = this.mouse_coords(e, screenX, screenY), x = _ref1[0], y = _ref1[1];
         speed = this.mget('speed');
         factor = speed * delta;
         if (factor > 0.9) {
@@ -27339,8 +27433,17 @@ define('modal',["jquery"], function($) {
         yr = this.plot_view.view_state.get('inner_range_vertical');
         sy_low = yr.get('start');
         sy_high = yr.get('end');
-        _ref1 = this.plot_view.xmapper.v_map_from_target([sx_low - (sx_low - x) * factor, sx_high - (sx_high - x) * factor]), xstart = _ref1[0], xend = _ref1[1];
-        _ref2 = this.plot_view.ymapper.v_map_from_target([sy_low - (sy_low - y) * factor, sy_high - (sy_high - y) * factor]), ystart = _ref2[0], yend = _ref2[1];
+        dims = this.mget('dimensions');
+        if (dims.indexOf('width') > -1) {
+          _ref2 = this.plot_view.xmapper.v_map_from_target([sx_low - (sx_low - x) * factor, sx_high - (sx_high - x) * factor]), xstart = _ref2[0], xend = _ref2[1];
+        } else {
+          _ref3 = this.plot_view.xmapper.v_map_from_target([sx_low, sx_high]), xstart = _ref3[0], xend = _ref3[1];
+        }
+        if (dims.indexOf('height') > -1) {
+          _ref4 = this.plot_view.ymapper.v_map_from_target([sy_low - (sy_low - y) * factor, sy_high - (sy_high - y) * factor]), ystart = _ref4[0], yend = _ref4[1];
+        } else {
+          _ref5 = this.plot_view.ymapper.v_map_from_target([sy_low, sy_high]), ystart = _ref5[0], yend = _ref5[1];
+        }
         zoom_info = {
           xr: {
             start: xstart,
@@ -27363,7 +27466,8 @@ define('modal',["jquery"], function($) {
       __extends(WheelZoomTool, _super);
 
       function WheelZoomTool() {
-        return WheelZoomTool.__super__.constructor.apply(this, arguments);
+        _ref1 = WheelZoomTool.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       WheelZoomTool.prototype.default_view = WheelZoomToolView;
@@ -27384,7 +27488,8 @@ define('modal',["jquery"], function($) {
       __extends(WheelZoomTools, _super);
 
       function WheelZoomTools() {
-        return WheelZoomTools.__super__.constructor.apply(this, arguments);
+        _ref2 = WheelZoomTools.__super__.constructor.apply(this, arguments);
+        return _ref2;
       }
 
       WheelZoomTools.prototype.model = WheelZoomTool;
@@ -27405,8 +27510,9 @@ define('modal',["jquery"], function($) {
 
 }).call(this);
 
-//# sourceMappingURL=wheel_zoom_tool.js.map
-;
+/*
+//@ sourceMappingURL=wheel_zoom_tool.js.map
+*/;
 /*globals jQuery, define, exports, require, window, document */
 (function (factory) {
 	
@@ -34459,10 +34565,17 @@ define('widget/pandas/pandas_pivot_template',[],function(){
 
       ParagraphView.prototype.initialize = function(options) {
         ParagraphView.__super__.initialize.call(this, options);
-        return this.render();
+        this.render();
+        return this.listenTo(this.model, 'change', this.render);
       };
 
       ParagraphView.prototype.render = function() {
+        if (this.mget('height')) {
+          this.$el.height(this.mget('height'));
+        }
+        if (this.mget('width')) {
+          this.$el.width(this.mget('width'));
+        }
         return this.$el.text(this.mget('text'));
       };
 
@@ -34506,7 +34619,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
     paragraphs = new Paragraphs();
     return {
       "Model": Paragraph,
-      "Collection": paragraphs
+      "Collection": paragraphs,
+      "View": ParagraphView
     };
   });
 
@@ -34539,7 +34653,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
       HBoxView.prototype.initialize = function(options) {
         HBoxView.__super__.initialize.call(this, options);
         this.views = {};
-        return this.render();
+        this.render();
+        return this.listenTo(this.model, 'change', this.render);
       };
 
       HBoxView.prototype.render = function() {
@@ -34635,7 +34750,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
       VBoxView.prototype.initialize = function(options) {
         VBoxView.__super__.initialize.call(this, options);
         this.views = {};
-        return this.render();
+        this.render();
+        return this.listenTo(this.model, 'change', this.render);
       };
 
       VBoxView.prototype.render = function() {
@@ -34697,7 +34813,8 @@ define('widget/pandas/pandas_pivot_template',[],function(){
     vboxes = new VBoxes();
     return {
       "Model": VBox,
-      "Collection": vboxes
+      "Collection": vboxes,
+      "View": VBoxView
     };
   });
 
@@ -34999,9 +35116,7 @@ define('widget/textinputtemplate',[],function(){
           _children: [],
           _field_defs: {}
         };
-        return {
-          'children': []
-        };
+        return defaults;
       };
 
       return VBoxModelForm;
@@ -35034,7 +35149,2105 @@ define('widget/textinputtemplate',[],function(){
 //@ sourceMappingURL=vboxmodelform.js.map
 */;
 (function() {
-  define('common/base',["underscore", "require", "common/custom", "common/gmap_plot", "common/grid_plot", "common/plot", "common/plot_context", "mapper/1d/categorical_mapper", "mapper/1d/linear_mapper", "mapper/2d/grid_mapper", "mapper/color/linear_color_mapper", "range/data_factor_range", "range/data_range1d", "range/factor_range", "range/range1d", "renderer/annotation/legend", "renderer/glyph/glyph_factory", "renderer/guide/categorical_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/guide/linear_axis", "renderer/overlay/box_selection", "source/column_data_source", "source/server_data_source", "ticking/abstract_ticker", "ticking/adaptive_ticker", "ticking/basic_tick_formatter", "ticking/basic_ticker", "ticking/categorical_tick_formatter", "ticking/categorical_ticker", "ticking/composite_ticker", "ticking/datetime_tick_formatter", "ticking/datetime_ticker", "ticking/days_ticker", "ticking/months_ticker", "ticking/single_interval_ticker", "tool/box_select_tool", "tool/box_zoom_tool", "tool/crosshair_tool", "tool/data_range_box_select_tool", "tool/embed_tool", "tool/hover_tool", "tool/pan_tool", "tool/preview_save_tool", "tool/reset_tool", "tool/resize_tool", "tool/wheel_zoom_tool", "tool/object_explorer_tool", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source", 'widget/paragraph', 'widget/hbox', 'widget/vbox', 'widget/textinput', 'widget/vboxmodelform'], function(_, require) {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('widget/pretext',["backbone", "./paragraph"], function(Backbone, Paragraph) {
+    var PreText, PreTextView, PreTexts, pretexts, _ref, _ref1, _ref2;
+    PreTextView = (function(_super) {
+      __extends(PreTextView, _super);
+
+      function PreTextView() {
+        _ref = PreTextView.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      PreTextView.prototype.tagName = "pre";
+
+      PreTextView.prototype.attributes = {
+        style: "overflow:scroll"
+      };
+
+      return PreTextView;
+
+    })(Paragraph.View);
+    PreText = (function(_super) {
+      __extends(PreText, _super);
+
+      function PreText() {
+        _ref1 = PreText.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      PreText.prototype.type = "PreText";
+
+      PreText.prototype.default_view = PreTextView;
+
+      PreText.prototype.defaults = function() {
+        return {
+          'text': '',
+          'height': 400,
+          'width': 400
+        };
+      };
+
+      return PreText;
+
+    })(Paragraph.Model);
+    PreTexts = (function(_super) {
+      __extends(PreTexts, _super);
+
+      function PreTexts() {
+        _ref2 = PreTexts.__super__.constructor.apply(this, arguments);
+        return _ref2;
+      }
+
+      PreTexts.prototype.model = PreText;
+
+      return PreTexts;
+
+    })(Backbone.Collection);
+    pretexts = new PreTexts();
+    return {
+      "Model": PreText,
+      "Collection": pretexts,
+      "View": PreTextView
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=pretext.js.map
+*/;
+define('widget/selecttemplate',[],function(){
+  var template = function(__obj) {
+  var _safe = function(value) {
+    if (typeof value === 'undefined' && value == null)
+      value = '';
+    var result = new String(value);
+    result.ecoSafe = true;
+    return result;
+  };
+  return (function() {
+    var __out = [], __self = this, _print = function(value) {
+      if (typeof value !== 'undefined' && value != null)
+        __out.push(value.ecoSafe ? value : __self.escape(value));
+    }, _capture = function(callback) {
+      var out = __out, result;
+      __out = [];
+      callback.call(this);
+      result = __out.join('');
+      __out = out;
+      return _safe(result);
+    };
+    (function() {
+      var option, _i, _len, _ref;
+    
+      _print(_safe('<label for="'));
+    
+      _print(this.id);
+    
+      _print(_safe('"> '));
+    
+      _print(this.title);
+    
+      _print(_safe(' </label>\n<select class="bk-widget-form-input" id="'));
+    
+      _print(this.id);
+    
+      _print(_safe('" name="'));
+    
+      _print(this.name);
+    
+      _print(_safe('">\n  '));
+    
+      _ref = this.options;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        option = _ref[_i];
+        _print(_safe('\n  '));
+        if (option.value === this.value) {
+          _print(_safe('\n  <option selected="selected" value="'));
+          _print(option.value);
+          _print(_safe('">'));
+          _print(option.name);
+          _print(_safe('</option>\n  '));
+        } else {
+          _print(_safe('\n  <option value="'));
+          _print(option.value);
+          _print(_safe('">'));
+          _print(option.name);
+          _print(_safe('</option> \n  '));
+        }
+        _print(_safe('\n\n  '));
+      }
+    
+      _print(_safe('\n</select>\n'));
+    
+    }).call(this);
+    
+    return __out.join('');
+  }).call((function() {
+    var obj = {
+      escape: function(value) {
+        return ('' + value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      },
+      safe: _safe
+    }, key;
+    for (key in __obj) obj[key] = __obj[key];
+    return obj;
+  })());
+};
+  return template;
+});
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('widget/selectbox',["common/has_parent", "common/continuum_view", "backbone", "underscore", "./selecttemplate"], function(HasParent, continuum_view, Backbone, _, selecttemplate) {
+    var ContinuumView, Select, SelectView, Selects, selectboxes, _ref, _ref1, _ref2;
+    ContinuumView = continuum_view.View;
+    SelectView = (function(_super) {
+      __extends(SelectView, _super);
+
+      function SelectView() {
+        _ref = SelectView.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      SelectView.prototype.events = {
+        "change select": "change_input"
+      };
+
+      SelectView.prototype.change_input = function() {
+        this.mset('value', this.$('select').val());
+        return console.log('set', this.model.attributes);
+      };
+
+      SelectView.prototype.tagName = "div";
+
+      SelectView.prototype.template = selecttemplate;
+
+      SelectView.prototype.initialize = function(options) {
+        SelectView.__super__.initialize.call(this, options);
+        this.render();
+        return this.listenTo(this.model, 'change', this.render);
+      };
+
+      SelectView.prototype.render = function() {
+        var html;
+        this.$el.html('');
+        html = this.template(this.model.attributes);
+        this.$el.html(html);
+        return this;
+      };
+
+      return SelectView;
+
+    })(ContinuumView);
+    Select = (function(_super) {
+      __extends(Select, _super);
+
+      function Select() {
+        _ref1 = Select.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      Select.prototype.type = "Select";
+
+      Select.prototype.default_view = SelectView;
+
+      Select.prototype.defaults = function() {
+        var def;
+        def = {
+          title: '',
+          value: '',
+          options: []
+        };
+        return def;
+      };
+
+      return Select;
+
+    })(HasParent);
+    Selects = (function(_super) {
+      __extends(Selects, _super);
+
+      function Selects() {
+        _ref2 = Selects.__super__.constructor.apply(this, arguments);
+        return _ref2;
+      }
+
+      Selects.prototype.model = Select;
+
+      return Selects;
+
+    })(Backbone.Collection);
+    selectboxes = new Selects();
+    return {
+      "Model": Select,
+      "Collection": selectboxes,
+      "View": SelectView
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=selectbox.js.map
+*/;
+define('widget/slidertemplate',[],function(){
+  var template = function(__obj) {
+  var _safe = function(value) {
+    if (typeof value === 'undefined' && value == null)
+      value = '';
+    var result = new String(value);
+    result.ecoSafe = true;
+    return result;
+  };
+  return (function() {
+    var __out = [], __self = this, _print = function(value) {
+      if (typeof value !== 'undefined' && value != null)
+        __out.push(value.ecoSafe ? value : __self.escape(value));
+    }, _capture = function(callback) {
+      var out = __out, result;
+      __out = [];
+      callback.call(this);
+      result = __out.join('');
+      __out = out;
+      return _safe(result);
+    };
+    (function() {
+      _print(_safe('<label for="'));
+    
+      _print(this.id);
+    
+      _print(_safe('"> '));
+    
+      _print(this.title);
+    
+      _print(_safe(' </label>    \n<div class="bk-slider-'));
+    
+      _print(this.orientation);
+    
+      _print(_safe('">\n  <div class="slider " id="'));
+    
+      _print(this.id);
+    
+      _print(_safe('">\n</div>\n\n'));
+    
+    }).call(this);
+    
+    return __out.join('');
+  }).call((function() {
+    var obj = {
+      escape: function(value) {
+        return ('' + value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      },
+      safe: _safe
+    }, key;
+    for (key in __obj) obj[key] = __obj[key];
+    return obj;
+  })());
+};
+  return template;
+});
+
+define('jquery_ui/core',['jquery'], function (jQuery) {
+/*!
+ * jQuery UI Core 1.10.0
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/category/ui-core/
+ */
+(function( $, undefined ) {
+
+var uuid = 0,
+	runiqueId = /^ui-id-\d+$/;
+
+// prevent duplicate loading
+// this is only a problem because we proxy existing functions
+// and we don't want to double proxy them
+$.ui = $.ui || {};
+if ( $.ui.version ) {
+	return;
+}
+
+$.extend( $.ui, {
+	version: "1.10.0",
+
+	keyCode: {
+		BACKSPACE: 8,
+		COMMA: 188,
+		DELETE: 46,
+		DOWN: 40,
+		END: 35,
+		ENTER: 13,
+		ESCAPE: 27,
+		HOME: 36,
+		LEFT: 37,
+		NUMPAD_ADD: 107,
+		NUMPAD_DECIMAL: 110,
+		NUMPAD_DIVIDE: 111,
+		NUMPAD_ENTER: 108,
+		NUMPAD_MULTIPLY: 106,
+		NUMPAD_SUBTRACT: 109,
+		PAGE_DOWN: 34,
+		PAGE_UP: 33,
+		PERIOD: 190,
+		RIGHT: 39,
+		SPACE: 32,
+		TAB: 9,
+		UP: 38
+	}
+});
+
+// plugins
+$.fn.extend({
+	_focus: $.fn.focus,
+	focus: function( delay, fn ) {
+		return typeof delay === "number" ?
+			this.each(function() {
+				var elem = this;
+				setTimeout(function() {
+					$( elem ).focus();
+					if ( fn ) {
+						fn.call( elem );
+					}
+				}, delay );
+			}) :
+			this._focus.apply( this, arguments );
+	},
+
+	scrollParent: function() {
+		var scrollParent;
+		if (($.ui.ie && (/(static|relative)/).test(this.css("position"))) || (/absolute/).test(this.css("position"))) {
+			scrollParent = this.parents().filter(function() {
+				return (/(relative|absolute|fixed)/).test($.css(this,"position")) && (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		} else {
+			scrollParent = this.parents().filter(function() {
+				return (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		}
+
+		return (/fixed/).test(this.css("position")) || !scrollParent.length ? $(document) : scrollParent;
+	},
+
+	zIndex: function( zIndex ) {
+		if ( zIndex !== undefined ) {
+			return this.css( "zIndex", zIndex );
+		}
+
+		if ( this.length ) {
+			var elem = $( this[ 0 ] ), position, value;
+			while ( elem.length && elem[ 0 ] !== document ) {
+				// Ignore z-index if position is set to a value where z-index is ignored by the browser
+				// This makes behavior of this function consistent across browsers
+				// WebKit always returns auto if the element is positioned
+				position = elem.css( "position" );
+				if ( position === "absolute" || position === "relative" || position === "fixed" ) {
+					// IE returns 0 when zIndex is not specified
+					// other browsers return a string
+					// we ignore the case of nested elements with an explicit value of 0
+					// <div style="z-index: -10;"><div style="z-index: 0;"></div></div>
+					value = parseInt( elem.css( "zIndex" ), 10 );
+					if ( !isNaN( value ) && value !== 0 ) {
+						return value;
+					}
+				}
+				elem = elem.parent();
+			}
+		}
+
+		return 0;
+	},
+
+	uniqueId: function() {
+		return this.each(function() {
+			if ( !this.id ) {
+				this.id = "ui-id-" + (++uuid);
+			}
+		});
+	},
+
+	removeUniqueId: function() {
+		return this.each(function() {
+			if ( runiqueId.test( this.id ) ) {
+				$( this ).removeAttr( "id" );
+			}
+		});
+	}
+});
+
+// selectors
+function focusable( element, isTabIndexNotNaN ) {
+	var map, mapName, img,
+		nodeName = element.nodeName.toLowerCase();
+	if ( "area" === nodeName ) {
+		map = element.parentNode;
+		mapName = map.name;
+		if ( !element.href || !mapName || map.nodeName.toLowerCase() !== "map" ) {
+			return false;
+		}
+		img = $( "img[usemap=#" + mapName + "]" )[0];
+		return !!img && visible( img );
+	}
+	return ( /input|select|textarea|button|object/.test( nodeName ) ?
+		!element.disabled :
+		"a" === nodeName ?
+			element.href || isTabIndexNotNaN :
+			isTabIndexNotNaN) &&
+		// the element and all of its ancestors must be visible
+		visible( element );
+}
+
+function visible( element ) {
+	return $.expr.filters.visible( element ) &&
+		!$( element ).parents().addBack().filter(function() {
+			return $.css( this, "visibility" ) === "hidden";
+		}).length;
+}
+
+$.extend( $.expr[ ":" ], {
+	data: $.expr.createPseudo ?
+		$.expr.createPseudo(function( dataName ) {
+			return function( elem ) {
+				return !!$.data( elem, dataName );
+			};
+		}) :
+		// support: jQuery <1.8
+		function( elem, i, match ) {
+			return !!$.data( elem, match[ 3 ] );
+		},
+
+	focusable: function( element ) {
+		return focusable( element, !isNaN( $.attr( element, "tabindex" ) ) );
+	},
+
+	tabbable: function( element ) {
+		var tabIndex = $.attr( element, "tabindex" ),
+			isTabIndexNaN = isNaN( tabIndex );
+		return ( isTabIndexNaN || tabIndex >= 0 ) && focusable( element, !isTabIndexNaN );
+	}
+});
+
+// support: jQuery <1.8
+if ( !$( "<a>" ).outerWidth( 1 ).jquery ) {
+	$.each( [ "Width", "Height" ], function( i, name ) {
+		var side = name === "Width" ? [ "Left", "Right" ] : [ "Top", "Bottom" ],
+			type = name.toLowerCase(),
+			orig = {
+				innerWidth: $.fn.innerWidth,
+				innerHeight: $.fn.innerHeight,
+				outerWidth: $.fn.outerWidth,
+				outerHeight: $.fn.outerHeight
+			};
+
+		function reduce( elem, size, border, margin ) {
+			$.each( side, function() {
+				size -= parseFloat( $.css( elem, "padding" + this ) ) || 0;
+				if ( border ) {
+					size -= parseFloat( $.css( elem, "border" + this + "Width" ) ) || 0;
+				}
+				if ( margin ) {
+					size -= parseFloat( $.css( elem, "margin" + this ) ) || 0;
+				}
+			});
+			return size;
+		}
+
+		$.fn[ "inner" + name ] = function( size ) {
+			if ( size === undefined ) {
+				return orig[ "inner" + name ].call( this );
+			}
+
+			return this.each(function() {
+				$( this ).css( type, reduce( this, size ) + "px" );
+			});
+		};
+
+		$.fn[ "outer" + name] = function( size, margin ) {
+			if ( typeof size !== "number" ) {
+				return orig[ "outer" + name ].call( this, size );
+			}
+
+			return this.each(function() {
+				$( this).css( type, reduce( this, size, true, margin ) + "px" );
+			});
+		};
+	});
+}
+
+// support: jQuery <1.8
+if ( !$.fn.addBack ) {
+	$.fn.addBack = function( selector ) {
+		return this.add( selector == null ?
+			this.prevObject : this.prevObject.filter( selector )
+		);
+	};
+}
+
+// support: jQuery 1.6.1, 1.6.2 (http://bugs.jquery.com/ticket/9413)
+if ( $( "<a>" ).data( "a-b", "a" ).removeData( "a-b" ).data( "a-b" ) ) {
+	$.fn.removeData = (function( removeData ) {
+		return function( key ) {
+			if ( arguments.length ) {
+				return removeData.call( this, $.camelCase( key ) );
+			} else {
+				return removeData.call( this );
+			}
+		};
+	})( $.fn.removeData );
+}
+
+
+
+
+
+// deprecated
+$.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
+
+$.support.selectstart = "onselectstart" in document.createElement( "div" );
+$.fn.extend({
+	disableSelection: function() {
+		return this.bind( ( $.support.selectstart ? "selectstart" : "mousedown" ) +
+			".ui-disableSelection", function( event ) {
+				event.preventDefault();
+			});
+	},
+
+	enableSelection: function() {
+		return this.unbind( ".ui-disableSelection" );
+	}
+});
+
+$.extend( $.ui, {
+	// $.ui.plugin is deprecated.  Use the proxy pattern instead.
+	plugin: {
+		add: function( module, option, set ) {
+			var i,
+				proto = $.ui[ module ].prototype;
+			for ( i in set ) {
+				proto.plugins[ i ] = proto.plugins[ i ] || [];
+				proto.plugins[ i ].push( [ option, set[ i ] ] );
+			}
+		},
+		call: function( instance, name, args ) {
+			var i,
+				set = instance.plugins[ name ];
+			if ( !set || !instance.element[ 0 ].parentNode || instance.element[ 0 ].parentNode.nodeType === 11 ) {
+				return;
+			}
+
+			for ( i = 0; i < set.length; i++ ) {
+				if ( instance.options[ set[ i ][ 0 ] ] ) {
+					set[ i ][ 1 ].apply( instance.element, args );
+				}
+			}
+		}
+	},
+
+	// only used by resizable
+	hasScroll: function( el, a ) {
+
+		//If overflow is hidden, the element might have extra content, but the user wants to hide it
+		if ( $( el ).css( "overflow" ) === "hidden") {
+			return false;
+		}
+
+		var scroll = ( a && a === "left" ) ? "scrollLeft" : "scrollTop",
+			has = false;
+
+		if ( el[ scroll ] > 0 ) {
+			return true;
+		}
+
+		// TODO: determine which cases actually cause this to happen
+		// if the element doesn't have the scroll set, see if it's possible to
+		// set the scroll
+		el[ scroll ] = 1;
+		has = ( el[ scroll ] > 0 );
+		el[ scroll ] = 0;
+		return has;
+	}
+});
+
+})( jQuery );
+
+});
+define('jquery_ui/widget',['jquery'], function (jQuery) {
+/*!
+ * jQuery UI Widget 1.10.0
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/jQuery.widget/
+ */
+(function( $, undefined ) {
+
+var uuid = 0,
+	slice = Array.prototype.slice,
+	_cleanData = $.cleanData;
+$.cleanData = function( elems ) {
+	for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+		try {
+			$( elem ).triggerHandler( "remove" );
+		// http://bugs.jquery.com/ticket/8235
+		} catch( e ) {}
+	}
+	_cleanData( elems );
+};
+
+$.widget = function( name, base, prototype ) {
+	var fullName, existingConstructor, constructor, basePrototype,
+		// proxiedPrototype allows the provided prototype to remain unmodified
+		// so that it can be used as a mixin for multiple widgets (#8876)
+		proxiedPrototype = {},
+		namespace = name.split( "." )[ 0 ];
+
+	name = name.split( "." )[ 1 ];
+	fullName = namespace + "-" + name;
+
+	if ( !prototype ) {
+		prototype = base;
+		base = $.Widget;
+	}
+
+	// create selector for plugin
+	$.expr[ ":" ][ fullName.toLowerCase() ] = function( elem ) {
+		return !!$.data( elem, fullName );
+	};
+
+	$[ namespace ] = $[ namespace ] || {};
+	existingConstructor = $[ namespace ][ name ];
+	constructor = $[ namespace ][ name ] = function( options, element ) {
+		// allow instantiation without "new" keyword
+		if ( !this._createWidget ) {
+			return new constructor( options, element );
+		}
+
+		// allow instantiation without initializing for simple inheritance
+		// must use "new" keyword (the code above always passes args)
+		if ( arguments.length ) {
+			this._createWidget( options, element );
+		}
+	};
+	// extend with the existing constructor to carry over any static properties
+	$.extend( constructor, existingConstructor, {
+		version: prototype.version,
+		// copy the object used to create the prototype in case we need to
+		// redefine the widget later
+		_proto: $.extend( {}, prototype ),
+		// track widgets that inherit from this widget in case this widget is
+		// redefined after a widget inherits from it
+		_childConstructors: []
+	});
+
+	basePrototype = new base();
+	// we need to make the options hash a property directly on the new instance
+	// otherwise we'll modify the options hash on the prototype that we're
+	// inheriting from
+	basePrototype.options = $.widget.extend( {}, basePrototype.options );
+	$.each( prototype, function( prop, value ) {
+		if ( !$.isFunction( value ) ) {
+			proxiedPrototype[ prop ] = value;
+			return;
+		}
+		proxiedPrototype[ prop ] = (function() {
+			var _super = function() {
+					return base.prototype[ prop ].apply( this, arguments );
+				},
+				_superApply = function( args ) {
+					return base.prototype[ prop ].apply( this, args );
+				};
+			return function() {
+				var __super = this._super,
+					__superApply = this._superApply,
+					returnValue;
+
+				this._super = _super;
+				this._superApply = _superApply;
+
+				returnValue = value.apply( this, arguments );
+
+				this._super = __super;
+				this._superApply = __superApply;
+
+				return returnValue;
+			};
+		})();
+	});
+	constructor.prototype = $.widget.extend( basePrototype, {
+		// TODO: remove support for widgetEventPrefix
+		// always use the name + a colon as the prefix, e.g., draggable:start
+		// don't prefix for widgets that aren't DOM-based
+		widgetEventPrefix: existingConstructor ? basePrototype.widgetEventPrefix : name
+	}, proxiedPrototype, {
+		constructor: constructor,
+		namespace: namespace,
+		widgetName: name,
+		widgetFullName: fullName
+	});
+
+	// If this widget is being redefined then we need to find all widgets that
+	// are inheriting from it and redefine all of them so that they inherit from
+	// the new version of this widget. We're essentially trying to replace one
+	// level in the prototype chain.
+	if ( existingConstructor ) {
+		$.each( existingConstructor._childConstructors, function( i, child ) {
+			var childPrototype = child.prototype;
+
+			// redefine the child widget using the same prototype that was
+			// originally used, but inherit from the new version of the base
+			$.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto );
+		});
+		// remove the list of existing child constructors from the old constructor
+		// so the old child constructors can be garbage collected
+		delete existingConstructor._childConstructors;
+	} else {
+		base._childConstructors.push( constructor );
+	}
+
+	$.widget.bridge( name, constructor );
+};
+
+$.widget.extend = function( target ) {
+	var input = slice.call( arguments, 1 ),
+		inputIndex = 0,
+		inputLength = input.length,
+		key,
+		value;
+	for ( ; inputIndex < inputLength; inputIndex++ ) {
+		for ( key in input[ inputIndex ] ) {
+			value = input[ inputIndex ][ key ];
+			if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
+				// Clone objects
+				if ( $.isPlainObject( value ) ) {
+					target[ key ] = $.isPlainObject( target[ key ] ) ?
+						$.widget.extend( {}, target[ key ], value ) :
+						// Don't extend strings, arrays, etc. with objects
+						$.widget.extend( {}, value );
+				// Copy everything else by reference
+				} else {
+					target[ key ] = value;
+				}
+			}
+		}
+	}
+	return target;
+};
+
+$.widget.bridge = function( name, object ) {
+	var fullName = object.prototype.widgetFullName || name;
+	$.fn[ name ] = function( options ) {
+		var isMethodCall = typeof options === "string",
+			args = slice.call( arguments, 1 ),
+			returnValue = this;
+
+		// allow multiple hashes to be passed on init
+		options = !isMethodCall && args.length ?
+			$.widget.extend.apply( null, [ options ].concat(args) ) :
+			options;
+
+		if ( isMethodCall ) {
+			this.each(function() {
+				var methodValue,
+					instance = $.data( this, fullName );
+				if ( !instance ) {
+					return $.error( "cannot call methods on " + name + " prior to initialization; " +
+						"attempted to call method '" + options + "'" );
+				}
+				if ( !$.isFunction( instance[options] ) || options.charAt( 0 ) === "_" ) {
+					return $.error( "no such method '" + options + "' for " + name + " widget instance" );
+				}
+				methodValue = instance[ options ].apply( instance, args );
+				if ( methodValue !== instance && methodValue !== undefined ) {
+					returnValue = methodValue && methodValue.jquery ?
+						returnValue.pushStack( methodValue.get() ) :
+						methodValue;
+					return false;
+				}
+			});
+		} else {
+			this.each(function() {
+				var instance = $.data( this, fullName );
+				if ( instance ) {
+					instance.option( options || {} )._init();
+				} else {
+					$.data( this, fullName, new object( options, this ) );
+				}
+			});
+		}
+
+		return returnValue;
+	};
+};
+
+$.Widget = function( /* options, element */ ) {};
+$.Widget._childConstructors = [];
+
+$.Widget.prototype = {
+	widgetName: "widget",
+	widgetEventPrefix: "",
+	defaultElement: "<div>",
+	options: {
+		disabled: false,
+
+		// callbacks
+		create: null
+	},
+	_createWidget: function( options, element ) {
+		element = $( element || this.defaultElement || this )[ 0 ];
+		this.element = $( element );
+		this.uuid = uuid++;
+		this.eventNamespace = "." + this.widgetName + this.uuid;
+		this.options = $.widget.extend( {},
+			this.options,
+			this._getCreateOptions(),
+			options );
+
+		this.bindings = $();
+		this.hoverable = $();
+		this.focusable = $();
+
+		if ( element !== this ) {
+			$.data( element, this.widgetFullName, this );
+			this._on( true, this.element, {
+				remove: function( event ) {
+					if ( event.target === element ) {
+						this.destroy();
+					}
+				}
+			});
+			this.document = $( element.style ?
+				// element within the document
+				element.ownerDocument :
+				// element is window or document
+				element.document || element );
+			this.window = $( this.document[0].defaultView || this.document[0].parentWindow );
+		}
+
+		this._create();
+		this._trigger( "create", null, this._getCreateEventData() );
+		this._init();
+	},
+	_getCreateOptions: $.noop,
+	_getCreateEventData: $.noop,
+	_create: $.noop,
+	_init: $.noop,
+
+	destroy: function() {
+		this._destroy();
+		// we can probably remove the unbind calls in 2.0
+		// all event bindings should go through this._on()
+		this.element
+			.unbind( this.eventNamespace )
+			// 1.9 BC for #7810
+			// TODO remove dual storage
+			.removeData( this.widgetName )
+			.removeData( this.widgetFullName )
+			// support: jquery <1.6.3
+			// http://bugs.jquery.com/ticket/9413
+			.removeData( $.camelCase( this.widgetFullName ) );
+		this.widget()
+			.unbind( this.eventNamespace )
+			.removeAttr( "aria-disabled" )
+			.removeClass(
+				this.widgetFullName + "-disabled " +
+				"ui-state-disabled" );
+
+		// clean up events and states
+		this.bindings.unbind( this.eventNamespace );
+		this.hoverable.removeClass( "ui-state-hover" );
+		this.focusable.removeClass( "ui-state-focus" );
+	},
+	_destroy: $.noop,
+
+	widget: function() {
+		return this.element;
+	},
+
+	option: function( key, value ) {
+		var options = key,
+			parts,
+			curOption,
+			i;
+
+		if ( arguments.length === 0 ) {
+			// don't return a reference to the internal hash
+			return $.widget.extend( {}, this.options );
+		}
+
+		if ( typeof key === "string" ) {
+			// handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
+			options = {};
+			parts = key.split( "." );
+			key = parts.shift();
+			if ( parts.length ) {
+				curOption = options[ key ] = $.widget.extend( {}, this.options[ key ] );
+				for ( i = 0; i < parts.length - 1; i++ ) {
+					curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
+					curOption = curOption[ parts[ i ] ];
+				}
+				key = parts.pop();
+				if ( value === undefined ) {
+					return curOption[ key ] === undefined ? null : curOption[ key ];
+				}
+				curOption[ key ] = value;
+			} else {
+				if ( value === undefined ) {
+					return this.options[ key ] === undefined ? null : this.options[ key ];
+				}
+				options[ key ] = value;
+			}
+		}
+
+		this._setOptions( options );
+
+		return this;
+	},
+	_setOptions: function( options ) {
+		var key;
+
+		for ( key in options ) {
+			this._setOption( key, options[ key ] );
+		}
+
+		return this;
+	},
+	_setOption: function( key, value ) {
+		this.options[ key ] = value;
+
+		if ( key === "disabled" ) {
+			this.widget()
+				.toggleClass( this.widgetFullName + "-disabled ui-state-disabled", !!value )
+				.attr( "aria-disabled", value );
+			this.hoverable.removeClass( "ui-state-hover" );
+			this.focusable.removeClass( "ui-state-focus" );
+		}
+
+		return this;
+	},
+
+	enable: function() {
+		return this._setOption( "disabled", false );
+	},
+	disable: function() {
+		return this._setOption( "disabled", true );
+	},
+
+	_on: function( suppressDisabledCheck, element, handlers ) {
+		var delegateElement,
+			instance = this;
+
+		// no suppressDisabledCheck flag, shuffle arguments
+		if ( typeof suppressDisabledCheck !== "boolean" ) {
+			handlers = element;
+			element = suppressDisabledCheck;
+			suppressDisabledCheck = false;
+		}
+
+		// no element argument, shuffle and use this.element
+		if ( !handlers ) {
+			handlers = element;
+			element = this.element;
+			delegateElement = this.widget();
+		} else {
+			// accept selectors, DOM elements
+			element = delegateElement = $( element );
+			this.bindings = this.bindings.add( element );
+		}
+
+		$.each( handlers, function( event, handler ) {
+			function handlerProxy() {
+				// allow widgets to customize the disabled handling
+				// - disabled as an array instead of boolean
+				// - disabled class as method for disabling individual parts
+				if ( !suppressDisabledCheck &&
+						( instance.options.disabled === true ||
+							$( this ).hasClass( "ui-state-disabled" ) ) ) {
+					return;
+				}
+				return ( typeof handler === "string" ? instance[ handler ] : handler )
+					.apply( instance, arguments );
+			}
+
+			// copy the guid so direct unbinding works
+			if ( typeof handler !== "string" ) {
+				handlerProxy.guid = handler.guid =
+					handler.guid || handlerProxy.guid || $.guid++;
+			}
+
+			var match = event.match( /^(\w+)\s*(.*)$/ ),
+				eventName = match[1] + instance.eventNamespace,
+				selector = match[2];
+			if ( selector ) {
+				delegateElement.delegate( selector, eventName, handlerProxy );
+			} else {
+				element.bind( eventName, handlerProxy );
+			}
+		});
+	},
+
+	_off: function( element, eventName ) {
+		eventName = (eventName || "").split( " " ).join( this.eventNamespace + " " ) + this.eventNamespace;
+		element.unbind( eventName ).undelegate( eventName );
+	},
+
+	_delay: function( handler, delay ) {
+		function handlerProxy() {
+			return ( typeof handler === "string" ? instance[ handler ] : handler )
+				.apply( instance, arguments );
+		}
+		var instance = this;
+		return setTimeout( handlerProxy, delay || 0 );
+	},
+
+	_hoverable: function( element ) {
+		this.hoverable = this.hoverable.add( element );
+		this._on( element, {
+			mouseenter: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-hover" );
+			},
+			mouseleave: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-hover" );
+			}
+		});
+	},
+
+	_focusable: function( element ) {
+		this.focusable = this.focusable.add( element );
+		this._on( element, {
+			focusin: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-focus" );
+			},
+			focusout: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-focus" );
+			}
+		});
+	},
+
+	_trigger: function( type, event, data ) {
+		var prop, orig,
+			callback = this.options[ type ];
+
+		data = data || {};
+		event = $.Event( event );
+		event.type = ( type === this.widgetEventPrefix ?
+			type :
+			this.widgetEventPrefix + type ).toLowerCase();
+		// the original event may come from any element
+		// so we need to reset the target on the new event
+		event.target = this.element[ 0 ];
+
+		// copy original event properties over to the new event
+		orig = event.originalEvent;
+		if ( orig ) {
+			for ( prop in orig ) {
+				if ( !( prop in event ) ) {
+					event[ prop ] = orig[ prop ];
+				}
+			}
+		}
+
+		this.element.trigger( event, data );
+		return !( $.isFunction( callback ) &&
+			callback.apply( this.element[0], [ event ].concat( data ) ) === false ||
+			event.isDefaultPrevented() );
+	}
+};
+
+$.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
+	$.Widget.prototype[ "_" + method ] = function( element, options, callback ) {
+		if ( typeof options === "string" ) {
+			options = { effect: options };
+		}
+		var hasOptions,
+			effectName = !options ?
+				method :
+				options === true || typeof options === "number" ?
+					defaultEffect :
+					options.effect || defaultEffect;
+		options = options || {};
+		if ( typeof options === "number" ) {
+			options = { duration: options };
+		}
+		hasOptions = !$.isEmptyObject( options );
+		options.complete = callback;
+		if ( options.delay ) {
+			element.delay( options.delay );
+		}
+		if ( hasOptions && $.effects && $.effects.effect[ effectName ] ) {
+			element[ method ]( options );
+		} else if ( effectName !== method && element[ effectName ] ) {
+			element[ effectName ]( options.duration, options.easing, callback );
+		} else {
+			element.queue(function( next ) {
+				$( this )[ method ]();
+				if ( callback ) {
+					callback.call( element[ 0 ] );
+				}
+				next();
+			});
+		}
+	};
+});
+
+})( jQuery );
+
+});
+define('jquery_ui/mouse',['jquery','./widget'], function (jQuery) {
+/*!
+ * jQuery UI Mouse 1.10.0
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/mouse/
+ *
+ * Depends:
+ *	jquery.ui.widget.js
+ */
+(function( $, undefined ) {
+
+var mouseHandled = false;
+$( document ).mouseup( function() {
+	mouseHandled = false;
+});
+
+$.widget("ui.mouse", {
+	version: "1.10.0",
+	options: {
+		cancel: "input,textarea,button,select,option",
+		distance: 1,
+		delay: 0
+	},
+	_mouseInit: function() {
+		var that = this;
+
+		this.element
+			.bind("mousedown."+this.widgetName, function(event) {
+				return that._mouseDown(event);
+			})
+			.bind("click."+this.widgetName, function(event) {
+				if (true === $.data(event.target, that.widgetName + ".preventClickEvent")) {
+					$.removeData(event.target, that.widgetName + ".preventClickEvent");
+					event.stopImmediatePropagation();
+					return false;
+				}
+			});
+
+		this.started = false;
+	},
+
+	// TODO: make sure destroying one instance of mouse doesn't mess with
+	// other instances of mouse
+	_mouseDestroy: function() {
+		this.element.unbind("."+this.widgetName);
+		if ( this._mouseMoveDelegate ) {
+			$(document)
+				.unbind("mousemove."+this.widgetName, this._mouseMoveDelegate)
+				.unbind("mouseup."+this.widgetName, this._mouseUpDelegate);
+		}
+	},
+
+	_mouseDown: function(event) {
+		// don't let more than one widget handle mouseStart
+		if( mouseHandled ) { return; }
+
+		// we may have missed mouseup (out of window)
+		(this._mouseStarted && this._mouseUp(event));
+
+		this._mouseDownEvent = event;
+
+		var that = this,
+			btnIsLeft = (event.which === 1),
+			// event.target.nodeName works around a bug in IE 8 with
+			// disabled inputs (#7620)
+			elIsCancel = (typeof this.options.cancel === "string" && event.target.nodeName ? $(event.target).closest(this.options.cancel).length : false);
+		if (!btnIsLeft || elIsCancel || !this._mouseCapture(event)) {
+			return true;
+		}
+
+		this.mouseDelayMet = !this.options.delay;
+		if (!this.mouseDelayMet) {
+			this._mouseDelayTimer = setTimeout(function() {
+				that.mouseDelayMet = true;
+			}, this.options.delay);
+		}
+
+		if (this._mouseDistanceMet(event) && this._mouseDelayMet(event)) {
+			this._mouseStarted = (this._mouseStart(event) !== false);
+			if (!this._mouseStarted) {
+				event.preventDefault();
+				return true;
+			}
+		}
+
+		// Click event may never have fired (Gecko & Opera)
+		if (true === $.data(event.target, this.widgetName + ".preventClickEvent")) {
+			$.removeData(event.target, this.widgetName + ".preventClickEvent");
+		}
+
+		// these delegates are required to keep context
+		this._mouseMoveDelegate = function(event) {
+			return that._mouseMove(event);
+		};
+		this._mouseUpDelegate = function(event) {
+			return that._mouseUp(event);
+		};
+		$(document)
+			.bind("mousemove."+this.widgetName, this._mouseMoveDelegate)
+			.bind("mouseup."+this.widgetName, this._mouseUpDelegate);
+
+		event.preventDefault();
+
+		mouseHandled = true;
+		return true;
+	},
+
+	_mouseMove: function(event) {
+		// IE mouseup check - mouseup happened when mouse was out of window
+		if ($.ui.ie && ( !document.documentMode || document.documentMode < 9 ) && !event.button) {
+			return this._mouseUp(event);
+		}
+
+		if (this._mouseStarted) {
+			this._mouseDrag(event);
+			return event.preventDefault();
+		}
+
+		if (this._mouseDistanceMet(event) && this._mouseDelayMet(event)) {
+			this._mouseStarted =
+				(this._mouseStart(this._mouseDownEvent, event) !== false);
+			(this._mouseStarted ? this._mouseDrag(event) : this._mouseUp(event));
+		}
+
+		return !this._mouseStarted;
+	},
+
+	_mouseUp: function(event) {
+		$(document)
+			.unbind("mousemove."+this.widgetName, this._mouseMoveDelegate)
+			.unbind("mouseup."+this.widgetName, this._mouseUpDelegate);
+
+		if (this._mouseStarted) {
+			this._mouseStarted = false;
+
+			if (event.target === this._mouseDownEvent.target) {
+				$.data(event.target, this.widgetName + ".preventClickEvent", true);
+			}
+
+			this._mouseStop(event);
+		}
+
+		return false;
+	},
+
+	_mouseDistanceMet: function(event) {
+		return (Math.max(
+				Math.abs(this._mouseDownEvent.pageX - event.pageX),
+				Math.abs(this._mouseDownEvent.pageY - event.pageY)
+			) >= this.options.distance
+		);
+	},
+
+	_mouseDelayMet: function(/* event */) {
+		return this.mouseDelayMet;
+	},
+
+	// These are placeholder methods, to be overriden by extending plugin
+	_mouseStart: function(/* event */) {},
+	_mouseDrag: function(/* event */) {},
+	_mouseStop: function(/* event */) {},
+	_mouseCapture: function(/* event */) { return true; }
+});
+
+})(jQuery);
+
+});
+define('jquery_ui/slider',['jquery','./core','./mouse','./widget'], function (jQuery) {
+/*!
+ * jQuery UI Slider 1.10.0
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/slider/
+ *
+ * Depends:
+ *	jquery.ui.core.js
+ *	jquery.ui.mouse.js
+ *	jquery.ui.widget.js
+ */
+(function( $, undefined ) {
+
+// number of pages in a slider
+// (how many times can you page up/down to go through the whole range)
+var numPages = 5;
+
+$.widget( "ui.slider", $.ui.mouse, {
+	version: "1.10.0",
+	widgetEventPrefix: "slide",
+
+	options: {
+		animate: false,
+		distance: 0,
+		max: 100,
+		min: 0,
+		orientation: "horizontal",
+		range: false,
+		step: 1,
+		value: 0,
+		values: null,
+
+		// callbacks
+		change: null,
+		slide: null,
+		start: null,
+		stop: null
+	},
+
+	_create: function() {
+		var i, handleCount,
+			o = this.options,
+			existingHandles = this.element.find( ".ui-slider-handle" ).addClass( "ui-state-default ui-corner-all" ),
+			handle = "<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a>",
+			handles = [];
+
+		this._keySliding = false;
+		this._mouseSliding = false;
+		this._animateOff = true;
+		this._handleIndex = null;
+		this._detectOrientation();
+		this._mouseInit();
+
+		this.element
+			.addClass( "ui-slider" +
+				" ui-slider-" + this.orientation +
+				" ui-widget" +
+				" ui-widget-content" +
+				" ui-corner-all");
+
+		this.range = $([]);
+
+		if ( o.range ) {
+			if ( o.range === true ) {
+				if ( !o.values ) {
+					o.values = [ this._valueMin(), this._valueMin() ];
+				} else if ( o.values.length && o.values.length !== 2 ) {
+					o.values = [ o.values[0], o.values[0] ];
+				} else if ( $.isArray( o.values ) ) {
+					o.values = o.values.slice(0);
+				}
+			}
+
+			this.range = $( "<div></div>" )
+				.appendTo( this.element )
+				.addClass( "ui-slider-range" +
+				// note: this isn't the most fittingly semantic framework class for this element,
+				// but worked best visually with a variety of themes
+				" ui-widget-header" +
+				( ( o.range === "min" || o.range === "max" ) ? " ui-slider-range-" + o.range : "" ) );
+		}
+
+		handleCount = ( o.values && o.values.length ) || 1;
+
+		for ( i = existingHandles.length; i < handleCount; i++ ) {
+			handles.push( handle );
+		}
+
+		this.handles = existingHandles.add( $( handles.join( "" ) ).appendTo( this.element ) );
+
+		this.handle = this.handles.eq( 0 );
+
+		this.handles.add( this.range ).filter( "a" )
+			.click(function( event ) {
+				event.preventDefault();
+			})
+			.mouseenter(function() {
+				if ( !o.disabled ) {
+					$( this ).addClass( "ui-state-hover" );
+				}
+			})
+			.mouseleave(function() {
+				$( this ).removeClass( "ui-state-hover" );
+			})
+			.focus(function() {
+				if ( !o.disabled ) {
+					$( ".ui-slider .ui-state-focus" ).removeClass( "ui-state-focus" );
+					$( this ).addClass( "ui-state-focus" );
+				} else {
+					$( this ).blur();
+				}
+			})
+			.blur(function() {
+				$( this ).removeClass( "ui-state-focus" );
+			});
+
+		this.handles.each(function( i ) {
+			$( this ).data( "ui-slider-handle-index", i );
+		});
+
+		this._setOption( "disabled", o.disabled );
+
+		this._on( this.handles, this._handleEvents );
+
+		this._refreshValue();
+
+		this._animateOff = false;
+	},
+
+	_destroy: function() {
+		this.handles.remove();
+		this.range.remove();
+
+		this.element
+			.removeClass( "ui-slider" +
+				" ui-slider-horizontal" +
+				" ui-slider-vertical" +
+				" ui-widget" +
+				" ui-widget-content" +
+				" ui-corner-all" );
+
+		this._mouseDestroy();
+	},
+
+	_mouseCapture: function( event ) {
+		var position, normValue, distance, closestHandle, index, allowed, offset, mouseOverHandle,
+			that = this,
+			o = this.options;
+
+		if ( o.disabled ) {
+			return false;
+		}
+
+		this.elementSize = {
+			width: this.element.outerWidth(),
+			height: this.element.outerHeight()
+		};
+		this.elementOffset = this.element.offset();
+
+		position = { x: event.pageX, y: event.pageY };
+		normValue = this._normValueFromMouse( position );
+		distance = this._valueMax() - this._valueMin() + 1;
+		this.handles.each(function( i ) {
+			var thisDistance = Math.abs( normValue - that.values(i) );
+			if (( distance > thisDistance ) ||
+				( distance === thisDistance &&
+					(i === that._lastChangedValue || that.values(i) === o.min ))) {
+				distance = thisDistance;
+				closestHandle = $( this );
+				index = i;
+			}
+		});
+
+		allowed = this._start( event, index );
+		if ( allowed === false ) {
+			return false;
+		}
+		this._mouseSliding = true;
+
+		this._handleIndex = index;
+
+		closestHandle
+			.addClass( "ui-state-active" )
+			.focus();
+
+		offset = closestHandle.offset();
+		mouseOverHandle = !$( event.target ).parents().addBack().is( ".ui-slider-handle" );
+		this._clickOffset = mouseOverHandle ? { left: 0, top: 0 } : {
+			left: event.pageX - offset.left - ( closestHandle.width() / 2 ),
+			top: event.pageY - offset.top -
+				( closestHandle.height() / 2 ) -
+				( parseInt( closestHandle.css("borderTopWidth"), 10 ) || 0 ) -
+				( parseInt( closestHandle.css("borderBottomWidth"), 10 ) || 0) +
+				( parseInt( closestHandle.css("marginTop"), 10 ) || 0)
+		};
+
+		if ( !this.handles.hasClass( "ui-state-hover" ) ) {
+			this._slide( event, index, normValue );
+		}
+		this._animateOff = true;
+		return true;
+	},
+
+	_mouseStart: function() {
+		return true;
+	},
+
+	_mouseDrag: function( event ) {
+		var position = { x: event.pageX, y: event.pageY },
+			normValue = this._normValueFromMouse( position );
+
+		this._slide( event, this._handleIndex, normValue );
+
+		return false;
+	},
+
+	_mouseStop: function( event ) {
+		this.handles.removeClass( "ui-state-active" );
+		this._mouseSliding = false;
+
+		this._stop( event, this._handleIndex );
+		this._change( event, this._handleIndex );
+
+		this._handleIndex = null;
+		this._clickOffset = null;
+		this._animateOff = false;
+
+		return false;
+	},
+
+	_detectOrientation: function() {
+		this.orientation = ( this.options.orientation === "vertical" ) ? "vertical" : "horizontal";
+	},
+
+	_normValueFromMouse: function( position ) {
+		var pixelTotal,
+			pixelMouse,
+			percentMouse,
+			valueTotal,
+			valueMouse;
+
+		if ( this.orientation === "horizontal" ) {
+			pixelTotal = this.elementSize.width;
+			pixelMouse = position.x - this.elementOffset.left - ( this._clickOffset ? this._clickOffset.left : 0 );
+		} else {
+			pixelTotal = this.elementSize.height;
+			pixelMouse = position.y - this.elementOffset.top - ( this._clickOffset ? this._clickOffset.top : 0 );
+		}
+
+		percentMouse = ( pixelMouse / pixelTotal );
+		if ( percentMouse > 1 ) {
+			percentMouse = 1;
+		}
+		if ( percentMouse < 0 ) {
+			percentMouse = 0;
+		}
+		if ( this.orientation === "vertical" ) {
+			percentMouse = 1 - percentMouse;
+		}
+
+		valueTotal = this._valueMax() - this._valueMin();
+		valueMouse = this._valueMin() + percentMouse * valueTotal;
+
+		return this._trimAlignValue( valueMouse );
+	},
+
+	_start: function( event, index ) {
+		var uiHash = {
+			handle: this.handles[ index ],
+			value: this.value()
+		};
+		if ( this.options.values && this.options.values.length ) {
+			uiHash.value = this.values( index );
+			uiHash.values = this.values();
+		}
+		return this._trigger( "start", event, uiHash );
+	},
+
+	_slide: function( event, index, newVal ) {
+		var otherVal,
+			newValues,
+			allowed;
+
+		if ( this.options.values && this.options.values.length ) {
+			otherVal = this.values( index ? 0 : 1 );
+
+			if ( ( this.options.values.length === 2 && this.options.range === true ) &&
+					( ( index === 0 && newVal > otherVal) || ( index === 1 && newVal < otherVal ) )
+				) {
+				newVal = otherVal;
+			}
+
+			if ( newVal !== this.values( index ) ) {
+				newValues = this.values();
+				newValues[ index ] = newVal;
+				// A slide can be canceled by returning false from the slide callback
+				allowed = this._trigger( "slide", event, {
+					handle: this.handles[ index ],
+					value: newVal,
+					values: newValues
+				} );
+				otherVal = this.values( index ? 0 : 1 );
+				if ( allowed !== false ) {
+					this.values( index, newVal, true );
+				}
+			}
+		} else {
+			if ( newVal !== this.value() ) {
+				// A slide can be canceled by returning false from the slide callback
+				allowed = this._trigger( "slide", event, {
+					handle: this.handles[ index ],
+					value: newVal
+				} );
+				if ( allowed !== false ) {
+					this.value( newVal );
+				}
+			}
+		}
+	},
+
+	_stop: function( event, index ) {
+		var uiHash = {
+			handle: this.handles[ index ],
+			value: this.value()
+		};
+		if ( this.options.values && this.options.values.length ) {
+			uiHash.value = this.values( index );
+			uiHash.values = this.values();
+		}
+
+		this._trigger( "stop", event, uiHash );
+	},
+
+	_change: function( event, index ) {
+		if ( !this._keySliding && !this._mouseSliding ) {
+			var uiHash = {
+				handle: this.handles[ index ],
+				value: this.value()
+			};
+			if ( this.options.values && this.options.values.length ) {
+				uiHash.value = this.values( index );
+				uiHash.values = this.values();
+			}
+
+			//store the last changed value index for reference when handles overlap
+			this._lastChangedValue = index;
+
+			this._trigger( "change", event, uiHash );
+		}
+	},
+
+	value: function( newValue ) {
+		if ( arguments.length ) {
+			this.options.value = this._trimAlignValue( newValue );
+			this._refreshValue();
+			this._change( null, 0 );
+			return;
+		}
+
+		return this._value();
+	},
+
+	values: function( index, newValue ) {
+		var vals,
+			newValues,
+			i;
+
+		if ( arguments.length > 1 ) {
+			this.options.values[ index ] = this._trimAlignValue( newValue );
+			this._refreshValue();
+			this._change( null, index );
+			return;
+		}
+
+		if ( arguments.length ) {
+			if ( $.isArray( arguments[ 0 ] ) ) {
+				vals = this.options.values;
+				newValues = arguments[ 0 ];
+				for ( i = 0; i < vals.length; i += 1 ) {
+					vals[ i ] = this._trimAlignValue( newValues[ i ] );
+					this._change( null, i );
+				}
+				this._refreshValue();
+			} else {
+				if ( this.options.values && this.options.values.length ) {
+					return this._values( index );
+				} else {
+					return this.value();
+				}
+			}
+		} else {
+			return this._values();
+		}
+	},
+
+	_setOption: function( key, value ) {
+		var i,
+			valsLength = 0;
+
+		if ( $.isArray( this.options.values ) ) {
+			valsLength = this.options.values.length;
+		}
+
+		$.Widget.prototype._setOption.apply( this, arguments );
+
+		switch ( key ) {
+			case "disabled":
+				if ( value ) {
+					this.handles.filter( ".ui-state-focus" ).blur();
+					this.handles.removeClass( "ui-state-hover" );
+					this.handles.prop( "disabled", true );
+				} else {
+					this.handles.prop( "disabled", false );
+				}
+				break;
+			case "orientation":
+				this._detectOrientation();
+				this.element
+					.removeClass( "ui-slider-horizontal ui-slider-vertical" )
+					.addClass( "ui-slider-" + this.orientation );
+				this._refreshValue();
+				break;
+			case "value":
+				this._animateOff = true;
+				this._refreshValue();
+				this._change( null, 0 );
+				this._animateOff = false;
+				break;
+			case "values":
+				this._animateOff = true;
+				this._refreshValue();
+				for ( i = 0; i < valsLength; i += 1 ) {
+					this._change( null, i );
+				}
+				this._animateOff = false;
+				break;
+			case "min":
+			case "max":
+				this._animateOff = true;
+				this._refreshValue();
+				this._animateOff = false;
+				break;
+		}
+	},
+
+	//internal value getter
+	// _value() returns value trimmed by min and max, aligned by step
+	_value: function() {
+		var val = this.options.value;
+		val = this._trimAlignValue( val );
+
+		return val;
+	},
+
+	//internal values getter
+	// _values() returns array of values trimmed by min and max, aligned by step
+	// _values( index ) returns single value trimmed by min and max, aligned by step
+	_values: function( index ) {
+		var val,
+			vals,
+			i;
+
+		if ( arguments.length ) {
+			val = this.options.values[ index ];
+			val = this._trimAlignValue( val );
+
+			return val;
+		} else {
+			// .slice() creates a copy of the array
+			// this copy gets trimmed by min and max and then returned
+			vals = this.options.values.slice();
+			for ( i = 0; i < vals.length; i+= 1) {
+				vals[ i ] = this._trimAlignValue( vals[ i ] );
+			}
+
+			return vals;
+		}
+	},
+
+	// returns the step-aligned value that val is closest to, between (inclusive) min and max
+	_trimAlignValue: function( val ) {
+		if ( val <= this._valueMin() ) {
+			return this._valueMin();
+		}
+		if ( val >= this._valueMax() ) {
+			return this._valueMax();
+		}
+		var step = ( this.options.step > 0 ) ? this.options.step : 1,
+			valModStep = (val - this._valueMin()) % step,
+			alignValue = val - valModStep;
+
+		if ( Math.abs(valModStep) * 2 >= step ) {
+			alignValue += ( valModStep > 0 ) ? step : ( -step );
+		}
+
+		// Since JavaScript has problems with large floats, round
+		// the final value to 5 digits after the decimal point (see #4124)
+		return parseFloat( alignValue.toFixed(5) );
+	},
+
+	_valueMin: function() {
+		return this.options.min;
+	},
+
+	_valueMax: function() {
+		return this.options.max;
+	},
+
+	_refreshValue: function() {
+		var lastValPercent, valPercent, value, valueMin, valueMax,
+			oRange = this.options.range,
+			o = this.options,
+			that = this,
+			animate = ( !this._animateOff ) ? o.animate : false,
+			_set = {};
+
+		if ( this.options.values && this.options.values.length ) {
+			this.handles.each(function( i ) {
+				valPercent = ( that.values(i) - that._valueMin() ) / ( that._valueMax() - that._valueMin() ) * 100;
+				_set[ that.orientation === "horizontal" ? "left" : "bottom" ] = valPercent + "%";
+				$( this ).stop( 1, 1 )[ animate ? "animate" : "css" ]( _set, o.animate );
+				if ( that.options.range === true ) {
+					if ( that.orientation === "horizontal" ) {
+						if ( i === 0 ) {
+							that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { left: valPercent + "%" }, o.animate );
+						}
+						if ( i === 1 ) {
+							that.range[ animate ? "animate" : "css" ]( { width: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+						}
+					} else {
+						if ( i === 0 ) {
+							that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { bottom: ( valPercent ) + "%" }, o.animate );
+						}
+						if ( i === 1 ) {
+							that.range[ animate ? "animate" : "css" ]( { height: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+						}
+					}
+				}
+				lastValPercent = valPercent;
+			});
+		} else {
+			value = this.value();
+			valueMin = this._valueMin();
+			valueMax = this._valueMax();
+			valPercent = ( valueMax !== valueMin ) ?
+					( value - valueMin ) / ( valueMax - valueMin ) * 100 :
+					0;
+			_set[ this.orientation === "horizontal" ? "left" : "bottom" ] = valPercent + "%";
+			this.handle.stop( 1, 1 )[ animate ? "animate" : "css" ]( _set, o.animate );
+
+			if ( oRange === "min" && this.orientation === "horizontal" ) {
+				this.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { width: valPercent + "%" }, o.animate );
+			}
+			if ( oRange === "max" && this.orientation === "horizontal" ) {
+				this.range[ animate ? "animate" : "css" ]( { width: ( 100 - valPercent ) + "%" }, { queue: false, duration: o.animate } );
+			}
+			if ( oRange === "min" && this.orientation === "vertical" ) {
+				this.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { height: valPercent + "%" }, o.animate );
+			}
+			if ( oRange === "max" && this.orientation === "vertical" ) {
+				this.range[ animate ? "animate" : "css" ]( { height: ( 100 - valPercent ) + "%" }, { queue: false, duration: o.animate } );
+			}
+		}
+	},
+
+	_handleEvents: {
+		keydown: function( event ) {
+			/*jshint maxcomplexity:25*/
+			var allowed, curVal, newVal, step,
+				index = $( event.target ).data( "ui-slider-handle-index" );
+
+			switch ( event.keyCode ) {
+				case $.ui.keyCode.HOME:
+				case $.ui.keyCode.END:
+				case $.ui.keyCode.PAGE_UP:
+				case $.ui.keyCode.PAGE_DOWN:
+				case $.ui.keyCode.UP:
+				case $.ui.keyCode.RIGHT:
+				case $.ui.keyCode.DOWN:
+				case $.ui.keyCode.LEFT:
+					event.preventDefault();
+					if ( !this._keySliding ) {
+						this._keySliding = true;
+						$( event.target ).addClass( "ui-state-active" );
+						allowed = this._start( event, index );
+						if ( allowed === false ) {
+							return;
+						}
+					}
+					break;
+			}
+
+			step = this.options.step;
+			if ( this.options.values && this.options.values.length ) {
+				curVal = newVal = this.values( index );
+			} else {
+				curVal = newVal = this.value();
+			}
+
+			switch ( event.keyCode ) {
+				case $.ui.keyCode.HOME:
+					newVal = this._valueMin();
+					break;
+				case $.ui.keyCode.END:
+					newVal = this._valueMax();
+					break;
+				case $.ui.keyCode.PAGE_UP:
+					newVal = this._trimAlignValue( curVal + ( (this._valueMax() - this._valueMin()) / numPages ) );
+					break;
+				case $.ui.keyCode.PAGE_DOWN:
+					newVal = this._trimAlignValue( curVal - ( (this._valueMax() - this._valueMin()) / numPages ) );
+					break;
+				case $.ui.keyCode.UP:
+				case $.ui.keyCode.RIGHT:
+					if ( curVal === this._valueMax() ) {
+						return;
+					}
+					newVal = this._trimAlignValue( curVal + step );
+					break;
+				case $.ui.keyCode.DOWN:
+				case $.ui.keyCode.LEFT:
+					if ( curVal === this._valueMin() ) {
+						return;
+					}
+					newVal = this._trimAlignValue( curVal - step );
+					break;
+			}
+
+			this._slide( event, index, newVal );
+		},
+		keyup: function( event ) {
+			var index = $( event.target ).data( "ui-slider-handle-index" );
+
+			if ( this._keySliding ) {
+				this._keySliding = false;
+				this._stop( event, index );
+				this._change( event, index );
+				$( event.target ).removeClass( "ui-state-active" );
+			}
+		}
+	}
+
+});
+
+}(jQuery));
+
+});
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('widget/slider',["common/has_parent", "common/continuum_view", "backbone", "underscore", "./slidertemplate", "jquery_ui/slider"], function(HasParent, continuum_view, Backbone, _, slidertemplate) {
+    var ContinuumView, Slider, SliderView, Sliders, sliders, _ref, _ref1, _ref2;
+    ContinuumView = continuum_view.View;
+    SliderView = (function(_super) {
+      __extends(SliderView, _super);
+
+      function SliderView() {
+        this.slide = __bind(this.slide, this);
+        _ref = SliderView.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      SliderView.prototype.tagName = "div";
+
+      SliderView.prototype.template = slidertemplate;
+
+      SliderView.prototype.initialize = function(options) {
+        SliderView.__super__.initialize.call(this, options);
+        return this.render();
+      };
+
+      SliderView.prototype.render = function() {
+        var html, max, min, step;
+        this.$el.html('');
+        html = this.template(this.model.attributes);
+        this.$el.html(html);
+        max = this.mget('end');
+        min = this.mget('start');
+        step = (max - min) / 50;
+        console.log('sliderval', min, max, step);
+        return this.$('.slider').slider({
+          orientation: this.mget('orientation'),
+          animate: "fast",
+          slide: _.throttle(this.slide, 200),
+          value: this.mget('value'),
+          min: min,
+          max: max,
+          step: step
+        });
+      };
+
+      SliderView.prototype.slide = function(event, ui) {
+        var value;
+        value = ui.value;
+        console.log('sliding', value);
+        return this.mset('value', value);
+      };
+
+      return SliderView;
+
+    })(ContinuumView);
+    Slider = (function(_super) {
+      __extends(Slider, _super);
+
+      function Slider() {
+        _ref1 = Slider.__super__.constructor.apply(this, arguments);
+        return _ref1;
+      }
+
+      Slider.prototype.type = "Slider";
+
+      Slider.prototype.default_view = SliderView;
+
+      Slider.prototype.defaults = function() {
+        var def;
+        def = {
+          title: '',
+          value: 0.5,
+          start: 0,
+          end: 1,
+          orientation: "horizontal"
+        };
+        return def;
+      };
+
+      return Slider;
+
+    })(HasParent);
+    Sliders = (function(_super) {
+      __extends(Sliders, _super);
+
+      function Sliders() {
+        _ref2 = Sliders.__super__.constructor.apply(this, arguments);
+        return _ref2;
+      }
+
+      Sliders.prototype.model = Slider;
+
+      return Sliders;
+
+    })(Backbone.Collection);
+    sliders = new Sliders();
+    return {
+      "Model": Slider,
+      "Collection": sliders,
+      "View": SliderView
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=slider.js.map
+*/;
+(function() {
+  define('common/base',["underscore", "require", "common/custom", "common/gmap_plot", "common/grid_plot", "common/plot", "common/plot_context", "mapper/1d/categorical_mapper", "mapper/1d/linear_mapper", "mapper/2d/grid_mapper", "mapper/color/linear_color_mapper", "range/data_factor_range", "range/data_range1d", "range/factor_range", "range/range1d", "renderer/annotation/legend", "renderer/glyph/glyph_factory", "renderer/guide/categorical_axis", "renderer/guide/datetime_axis", "renderer/guide/grid", "renderer/guide/linear_axis", "renderer/overlay/box_selection", "source/column_data_source", "source/server_data_source", "ticking/abstract_ticker", "ticking/adaptive_ticker", "ticking/basic_tick_formatter", "ticking/basic_ticker", "ticking/categorical_tick_formatter", "ticking/categorical_ticker", "ticking/composite_ticker", "ticking/datetime_tick_formatter", "ticking/datetime_ticker", "ticking/days_ticker", "ticking/months_ticker", "ticking/single_interval_ticker", "ticking/years_ticker", "tool/box_select_tool", "tool/box_zoom_tool", "tool/crosshair_tool", "tool/data_range_box_select_tool", "tool/embed_tool", "tool/hover_tool", "tool/pan_tool", "tool/preview_save_tool", "tool/reset_tool", "tool/resize_tool", "tool/wheel_zoom_tool", "tool/object_explorer_tool", "widget/data_slider", "widget/pandas/ipython_remote_data", "widget/pandas/pandas_pivot_table", "widget/pandas/pandas_plot_source", 'widget/paragraph', 'widget/hbox', 'widget/vbox', 'widget/textinput', 'widget/vboxmodelform', 'widget/pretext', 'widget/selectbox', 'widget/slider'], function(_, require) {
     var Collections, Config, collection_overrides, locations, mod_cache;
     require("common/custom").monkey_patch();
     Config = {
@@ -35071,6 +37284,7 @@ define('widget/textinputtemplate',[],function(){
       DaysTicker: 'ticking/days_ticker',
       MonthsTicker: 'ticking/months_ticker',
       SingleIntervalTicker: 'ticking/single_interval_ticker',
+      YearsTicker: 'ticking/years_ticker',
       PanTool: 'tool/pan_tool',
       WheelZoomTool: 'tool/wheel_zoom_tool',
       ResizeTool: 'tool/resize_tool',
@@ -35091,7 +37305,10 @@ define('widget/textinputtemplate',[],function(){
       HBox: 'widget/hbox',
       VBox: 'widget/vbox',
       VBoxModelForm: 'widget/vboxmodelform',
-      TextInput: 'widget/textinput'
+      TextInput: 'widget/textinput',
+      PreText: 'widget/pretext',
+      Select: 'widget/selectbox',
+      Slider: 'widget/slider'
     };
     mod_cache = {};
     collection_overrides = {};
@@ -35392,15 +37609,7 @@ define('widget/textinputtemplate',[],function(){
       }
       if (tools.indexOf("hover") > -1) {
         hover_tool = HoverTool.Collection.create({
-          renderers: (function() {
-            var _i, _len, _results;
-            _results = [];
-            for (_i = 0, _len = glyphs.length; _i < _len; _i++) {
-              g = glyphs[_i];
-              _results.push(g.ref());
-            }
-            return _results;
-          })()
+          plot: plot.ref()
         });
         added_tools.push(hover_tool);
       }
@@ -35776,745 +37985,6 @@ define('widget/textinputtemplate',[],function(){
 //# sourceMappingURL=random.js.map
 ;
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  define('common/ticking',["underscore", "timezone", "sprintf"], function(_, tz, sprintf) {
-    var AbstractScale, AdaptiveScale, BasicScale, BasicTickFormatter, CompositeScale, DEFAULT_DESIRED_N_TICKS, DatetimeFormatter, DatetimeScale, DaysScale, MonthsScale, ONE_DAY, ONE_HOUR, ONE_MILLI, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR, SingleIntervalScale, arange, argmin, clamp, copy_date, date_range_by_month, date_range_by_year, indices, last_month_no_later_than, last_year_no_later_than, log, repr, _array, _four_digit_year, _ms_dot_us, _strftime, _two_digit_year, _us;
-    arange = function(start, end, step) {
-      var i, ret_arr;
-      if (end == null) {
-        end = false;
-      }
-      if (step == null) {
-        step = false;
-      }
-      if (!end) {
-        end = start;
-        start = 0;
-      }
-      if (start > end) {
-        if (step === false) {
-          step = -1;
-        } else if (step > 0) {
-          "the loop will never terminate";
-          1 / 0;
-        }
-      } else if (step < 0) {
-        "the loop will never terminate";
-        1 / 0;
-      }
-      if (!step) {
-        step = 1;
-      }
-      ret_arr = [];
-      i = start;
-      if (start < end) {
-        while (i < end) {
-          ret_arr.push(i);
-          i += step;
-        }
-      } else {
-        while (i > end) {
-          ret_arr.push(i);
-          i += step;
-        }
-      }
-      return ret_arr;
-    };
-    repr = function(obj) {
-      var elem, elems_str, key, obj_as_string, props_str;
-      if (obj === null) {
-        return "null";
-      } else if (obj.constructor === Array) {
-        elems_str = ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = obj.length; _i < _len; _i++) {
-            elem = obj[_i];
-            _results.push(repr(elem));
-          }
-          return _results;
-        })()).join(", ");
-        return "[" + elems_str + "]";
-      } else if (obj.constructor === Object) {
-        props_str = ((function() {
-          var _results;
-          _results = [];
-          for (key in obj) {
-            _results.push("" + key + ": " + (repr(obj[key])));
-          }
-          return _results;
-        })()).join(", ");
-        return "{" + props_str + "}";
-      } else if (obj.constructor === String) {
-        return "\"" + obj + "\"";
-      } else if (obj.constructor === Function) {
-        return "<Function: " + obj.name + ">";
-      } else {
-        obj_as_string = obj.toString();
-        if (obj_as_string === "[object Object]") {
-          return "<" + obj.constructor.name + ">";
-        } else {
-          return obj_as_string;
-        }
-      }
-    };
-    indices = function(arr) {
-      return _.range(arr.length);
-    };
-    argmin = function(arr) {
-      var ret;
-      ret = _.min(indices(arr), (function(i) {
-        return arr[i];
-      }));
-      return ret;
-    };
-    clamp = function(x, min_val, max_val) {
-      return Math.max(min_val, Math.min(max_val, x));
-    };
-    log = function(x, base) {
-      if (base == null) {
-        base = Math.E;
-      }
-      return Math.log(x) / Math.log(base);
-    };
-    copy_date = function(date) {
-      return new Date(date.getTime());
-    };
-    last_month_no_later_than = function(date) {
-      date = copy_date(date);
-      date.setUTCDate(1);
-      date.setUTCHours(0);
-      date.setUTCMinutes(0);
-      date.setUTCSeconds(0);
-      date.setUTCMilliseconds(0);
-      return date;
-    };
-    last_year_no_later_than = function(date) {
-      date = last_month_no_later_than(date);
-      date.setUTCMonth(0);
-      return date;
-    };
-    date_range_by_year = function(start_time, end_time) {
-      var date, dates, end_date, start_date;
-      start_date = last_year_no_later_than(new Date(start_time));
-      end_date = last_year_no_later_than(new Date(end_time));
-      end_date.setUTCFullYear(end_date.getUTCFullYear() + 1);
-      dates = [];
-      date = start_date;
-      while (true) {
-        dates.push(copy_date(date));
-        date.setUTCFullYear(date.getUTCFullYear() + 1);
-        if (date > end_date) {
-          break;
-        }
-      }
-      return dates;
-    };
-    date_range_by_month = function(start_time, end_time) {
-      var date, dates, end_date, prev_end_date, start_date;
-      start_date = last_month_no_later_than(new Date(start_time));
-      end_date = last_month_no_later_than(new Date(end_time));
-      prev_end_date = copy_date(end_date);
-      end_date.setUTCMonth(end_date.getUTCMonth() + 1);
-      dates = [];
-      date = start_date;
-      while (true) {
-        dates.push(copy_date(date));
-        date.setUTCMonth(date.getUTCMonth() + 1);
-        if (date > end_date) {
-          break;
-        }
-      }
-      return dates;
-    };
-    DEFAULT_DESIRED_N_TICKS = 6;
-    AbstractScale = (function() {
-      function AbstractScale(toString_properties) {
-        this.toString_properties = toString_properties != null ? toString_properties : [];
-      }
-
-      AbstractScale.prototype.get_ticks = function(data_low, data_high, range, _arg) {
-        var desired_n_ticks;
-        desired_n_ticks = _arg.desired_n_ticks;
-        if (desired_n_ticks == null) {
-          desired_n_ticks = DEFAULT_DESIRED_N_TICKS;
-        }
-        return this.get_ticks_no_defaults(data_low, data_high, desired_n_ticks);
-      };
-
-      AbstractScale.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
-        var end_factor, factor, factors, interval, start_factor, ticks;
-        interval = this.get_interval(data_low, data_high, desired_n_ticks);
-        start_factor = Math.floor(data_low / interval);
-        end_factor = Math.ceil(data_high / interval);
-        factors = arange(start_factor, end_factor + 1);
-        ticks = (function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = factors.length; _i < _len; _i++) {
-            factor = factors[_i];
-            _results.push(factor * interval);
-          }
-          return _results;
-        })();
-        return ticks;
-      };
-
-      AbstractScale.prototype.get_interval = void 0;
-
-      AbstractScale.prototype.get_min_interval = function() {
-        return this.min_interval;
-      };
-
-      AbstractScale.prototype.get_max_interval = function() {
-        return this.max_interval;
-      };
-
-      AbstractScale.prototype.min_interval = void 0;
-
-      AbstractScale.prototype.max_interval = void 0;
-
-      AbstractScale.prototype.toString = function() {
-        var class_name, key, params_str, props;
-        class_name = this.constructor.name;
-        props = this.toString_properties;
-        params_str = ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = props.length; _i < _len; _i++) {
-            key = props[_i];
-            _results.push("" + key + "=" + (repr(this[key])));
-          }
-          return _results;
-        }).call(this)).join(", ");
-        return "" + class_name + "(" + params_str + ")";
-      };
-
-      AbstractScale.prototype.get_ideal_interval = function(data_low, data_high, desired_n_ticks) {
-        var data_range;
-        data_range = data_high - data_low;
-        return data_range / desired_n_ticks;
-      };
-
-      return AbstractScale;
-
-    })();
-    SingleIntervalScale = (function(_super) {
-      __extends(SingleIntervalScale, _super);
-
-      function SingleIntervalScale(interval) {
-        this.interval = interval;
-        SingleIntervalScale.__super__.constructor.call(this, ['interval']);
-        this.min_interval = this.interval;
-        this.max_interval = this.interval;
-      }
-
-      SingleIntervalScale.prototype.get_interval = function(data_low, data_high, n_desired_ticks) {
-        return this.interval;
-      };
-
-      return SingleIntervalScale;
-
-    })(AbstractScale);
-    CompositeScale = (function(_super) {
-      __extends(CompositeScale, _super);
-
-      function CompositeScale(scales) {
-        this.scales = scales;
-        CompositeScale.__super__.constructor.call(this);
-        this.min_intervals = _.invoke(this.scales, 'get_min_interval');
-        this.max_intervals = _.invoke(this.scales, 'get_max_interval');
-        this.min_interval = _.first(this.min_intervals);
-        this.max_interval = _.last(this.max_intervals);
-      }
-
-      CompositeScale.prototype.get_best_scale = function(data_low, data_high, desired_n_ticks) {
-        var best_index, best_scale, best_scale_ndx, data_range, errors, ideal_interval, intervals, scale_ndxs;
-        data_range = data_high - data_low;
-        ideal_interval = this.get_ideal_interval(data_low, data_high, desired_n_ticks);
-        scale_ndxs = [_.sortedIndex(this.min_intervals, ideal_interval) - 1, _.sortedIndex(this.max_intervals, ideal_interval)];
-        intervals = [this.min_intervals[scale_ndxs[0]], this.max_intervals[scale_ndxs[1]]];
-        errors = intervals.map(function(interval) {
-          return Math.abs(desired_n_ticks - (data_range / interval));
-        });
-        best_index = argmin(errors);
-        if (best_index === Infinity) {
-          return this.scales[0];
-        }
-        best_scale_ndx = scale_ndxs[best_index];
-        best_scale = this.scales[best_scale_ndx];
-        return best_scale;
-      };
-
-      CompositeScale.prototype.get_interval = function(data_low, data_high, desired_n_ticks) {
-        var best_scale;
-        best_scale = this.get_best_scale(data_low, data_high, desired_n_ticks);
-        return best_scale.get_interval(data_low, data_high, desired_n_ticks);
-      };
-
-      CompositeScale.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
-        var best_scale;
-        best_scale = this.get_best_scale(data_low, data_high, desired_n_ticks);
-        return best_scale.get_ticks_no_defaults(data_low, data_high, desired_n_ticks);
-      };
-
-      return CompositeScale;
-
-    })(AbstractScale);
-    AdaptiveScale = (function(_super) {
-      __extends(AdaptiveScale, _super);
-
-      function AdaptiveScale(mantissas, base, min_interval, max_interval) {
-        var prefix_mantissa, suffix_mantissa;
-        this.mantissas = mantissas;
-        this.base = base != null ? base : 10.0;
-        this.min_interval = min_interval != null ? min_interval : 0.0;
-        this.max_interval = max_interval != null ? max_interval : Infinity;
-        AdaptiveScale.__super__.constructor.call(this, ['mantissas', 'base', 'min_magnitude', 'max_magnitude']);
-        prefix_mantissa = _.last(this.mantissas) / this.base;
-        suffix_mantissa = _.first(this.mantissas) * this.base;
-        this.extended_mantissas = _.flatten([prefix_mantissa, this.mantissas, suffix_mantissa]);
-        this.base_factor = this.min_interval === 0.0 ? 1.0 : this.min_interval;
-      }
-
-      AdaptiveScale.prototype.get_interval = function(data_low, data_high, desired_n_ticks) {
-        var best_mantissa, candidate_mantissas, data_range, errors, ideal_interval, ideal_magnitude, ideal_mantissa, interval, interval_exponent;
-        data_range = data_high - data_low;
-        ideal_interval = this.get_ideal_interval(data_low, data_high, desired_n_ticks);
-        interval_exponent = Math.floor(log(ideal_interval / this.base_factor, this.base));
-        ideal_magnitude = Math.pow(this.base, interval_exponent) * this.base_factor;
-        ideal_mantissa = ideal_interval / ideal_magnitude;
-        candidate_mantissas = this.extended_mantissas;
-        errors = candidate_mantissas.map(function(mantissa) {
-          return Math.abs(desired_n_ticks - (data_range / (mantissa * ideal_magnitude)));
-        });
-        best_mantissa = candidate_mantissas[argmin(errors)];
-        interval = best_mantissa * ideal_magnitude;
-        return clamp(interval, this.min_interval, this.max_interval);
-      };
-
-      return AdaptiveScale;
-
-    })(AbstractScale);
-    MonthsScale = (function(_super) {
-      __extends(MonthsScale, _super);
-
-      function MonthsScale(months) {
-        this.months = months;
-        this.typical_interval = this.months.length > 1 ? (this.months[1] - this.months[0]) * ONE_MONTH : 12 * ONE_MONTH;
-        MonthsScale.__super__.constructor.call(this, this.typical_interval);
-        this.toString_properties = ['months'];
-      }
-
-      MonthsScale.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
-        var all_ticks, date, month_dates, months, months_of_year, ticks_in_range, year_dates;
-        year_dates = date_range_by_year(data_low, data_high);
-        months = this.months;
-        months_of_year = function(year_date) {
-          return months.map(function(month) {
-            var month_date;
-            month_date = copy_date(year_date);
-            month_date.setUTCMonth(month);
-            return month_date;
-          });
-        };
-        month_dates = _.flatten((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = year_dates.length; _i < _len; _i++) {
-            date = year_dates[_i];
-            _results.push(months_of_year(date));
-          }
-          return _results;
-        })());
-        all_ticks = _.invoke(month_dates, 'getTime');
-        ticks_in_range = _.filter(all_ticks, (function(tick) {
-          return (data_low <= tick && tick <= data_high);
-        }));
-        return ticks_in_range;
-      };
-
-      return MonthsScale;
-
-    })(SingleIntervalScale);
-    DaysScale = (function(_super) {
-      __extends(DaysScale, _super);
-
-      function DaysScale(days) {
-        this.days = days;
-        this.typical_interval = this.days.length > 1 ? (this.days[1] - this.days[0]) * ONE_DAY : 31 * ONE_DAY;
-        DaysScale.__super__.constructor.call(this, this.typical_interval);
-        this.toString_properties = ['days'];
-      }
-
-      DaysScale.prototype.get_ticks_no_defaults = function(data_low, data_high, desired_n_ticks) {
-        var all_ticks, date, day_dates, days, days_of_month, month_dates, ticks_in_range, typical_interval;
-        month_dates = date_range_by_month(data_low, data_high);
-        days = this.days;
-        typical_interval = this.typical_interval;
-        days_of_month = function(month_date) {
-          var dates, day, day_date, future_date, _i, _len;
-          dates = [];
-          for (_i = 0, _len = days.length; _i < _len; _i++) {
-            day = days[_i];
-            day_date = copy_date(month_date);
-            day_date.setUTCDate(day);
-            future_date = new Date(day_date.getTime() + (typical_interval / 2));
-            if (future_date.getUTCMonth() === month_date.getUTCMonth()) {
-              dates.push(day_date);
-            }
-          }
-          return dates;
-        };
-        day_dates = _.flatten((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = month_dates.length; _i < _len; _i++) {
-            date = month_dates[_i];
-            _results.push(days_of_month(date));
-          }
-          return _results;
-        })());
-        all_ticks = _.invoke(day_dates, 'getTime');
-        ticks_in_range = _.filter(all_ticks, (function(tick) {
-          return (data_low <= tick && tick <= data_high);
-        }));
-        return ticks_in_range;
-      };
-
-      return DaysScale;
-
-    })(SingleIntervalScale);
-    ONE_MILLI = 1.0;
-    ONE_SECOND = 1000.0;
-    ONE_MINUTE = 60.0 * ONE_SECOND;
-    ONE_HOUR = 60 * ONE_MINUTE;
-    ONE_DAY = 24 * ONE_HOUR;
-    ONE_MONTH = 30 * ONE_DAY;
-    ONE_YEAR = 365 * ONE_DAY;
-    BasicScale = (function(_super) {
-      __extends(BasicScale, _super);
-
-      function BasicScale() {
-        BasicScale.__super__.constructor.call(this, [1, 2, 5]);
-      }
-
-      return BasicScale;
-
-    })(AdaptiveScale);
-    DatetimeScale = (function(_super) {
-      __extends(DatetimeScale, _super);
-
-      function DatetimeScale() {
-        DatetimeScale.__super__.constructor.call(this, [new AdaptiveScale([1, 2, 5], 10, 0, 500 * ONE_MILLI), new AdaptiveScale([1, 2, 5, 10, 15, 20, 30], 60, ONE_SECOND, 30 * ONE_MINUTE), new AdaptiveScale([1, 2, 4, 6, 8, 12], 24.0, ONE_HOUR, 12 * ONE_HOUR), new DaysScale(arange(1, 32)), new DaysScale(arange(1, 31, 3)), new DaysScale([1, 8, 15, 22]), new DaysScale([1, 15]), new MonthsScale(arange(0, 12)), new MonthsScale(arange(0, 12, 2)), new MonthsScale(arange(0, 12, 4)), new MonthsScale(arange(0, 12, 6)), new AdaptiveScale([1, 2, 5], 10, ONE_YEAR, Infinity)]);
-      }
-
-      return DatetimeScale;
-
-    })(CompositeScale);
-    BasicTickFormatter = (function() {
-      function BasicTickFormatter(precision, use_scientific, power_limit_high, power_limit_low) {
-        this.precision = precision != null ? precision : 'auto';
-        this.use_scientific = use_scientific != null ? use_scientific : true;
-        this.power_limit_high = power_limit_high != null ? power_limit_high : 5;
-        this.power_limit_low = power_limit_low != null ? power_limit_low : -3;
-        this.scientific_limit_low = Math.pow(10.0, power_limit_low);
-        this.scientific_limit_high = Math.pow(10.0, power_limit_high);
-        this.last_precision = 3;
-      }
-
-      BasicTickFormatter.prototype.format = function(ticks) {
-        var i, is_ok, labels, need_sci, tick, tick_abs, x, zero_eps, _i, _j, _k, _l, _len, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4;
-        if (ticks.length === 0) {
-          return [];
-        }
-        zero_eps = 0;
-        if (ticks.length >= 2) {
-          zero_eps = Math.abs(ticks[1] - ticks[0]) / 10000;
-        }
-        need_sci = false;
-        if (this.use_scientific) {
-          for (_i = 0, _len = ticks.length; _i < _len; _i++) {
-            tick = ticks[_i];
-            tick_abs = Math.abs(tick);
-            if (tick_abs > zero_eps && (tick_abs >= this.scientific_limit_high || tick_abs <= this.scientific_limit_low)) {
-              need_sci = true;
-              break;
-            }
-          }
-        }
-        if (_.isNumber(this.precision)) {
-          labels = new Array(ticks.length);
-          if (need_sci) {
-            for (i = _j = 0, _ref = ticks.length; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
-              labels[i] = ticks[i].toExponential(this.precision);
-            }
-          } else {
-            for (i = _k = 0, _ref1 = ticks.length; 0 <= _ref1 ? _k < _ref1 : _k > _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
-              labels[i] = ticks[i].toPrecision(this.precision).replace(/(\.[0-9]*?)0+$/, "$1").replace(/\.$/, "");
-            }
-          }
-          return labels;
-        } else if (this.precision === 'auto') {
-          labels = new Array(ticks.length);
-          for (x = _l = _ref2 = this.last_precision; _ref2 <= 15 ? _l <= 15 : _l >= 15; x = _ref2 <= 15 ? ++_l : --_l) {
-            is_ok = true;
-            if (need_sci) {
-              for (i = _m = 0, _ref3 = ticks.length; 0 <= _ref3 ? _m < _ref3 : _m > _ref3; i = 0 <= _ref3 ? ++_m : --_m) {
-                labels[i] = ticks[i].toExponential(x);
-                if (i > 0) {
-                  if (labels[i] === labels[i - 1]) {
-                    is_ok = false;
-                    break;
-                  }
-                }
-              }
-              if (is_ok) {
-                break;
-              }
-            } else {
-              for (i = _n = 0, _ref4 = ticks.length; 0 <= _ref4 ? _n < _ref4 : _n > _ref4; i = 0 <= _ref4 ? ++_n : --_n) {
-                labels[i] = ticks[i].toPrecision(x).replace(/(\.[0-9]*?)0+$/, "$1").replace(/\.$/, "");
-                if (i > 0) {
-                  if (labels[i] === labels[i - 1]) {
-                    is_ok = false;
-                    break;
-                  }
-                }
-              }
-              if (is_ok) {
-                break;
-              }
-            }
-            if (is_ok) {
-              this.last_precision = x;
-              return labels;
-            }
-          }
-        }
-        return labels;
-      };
-
-      return BasicTickFormatter;
-
-    })();
-    _us = function(t) {
-      return sprintf("%3dus", Math.floor((t % 1) * 1000));
-    };
-    _ms_dot_us = function(t) {
-      var ms, us;
-      ms = Math.floor(((t / 1000) % 1) * 1000);
-      us = Math.floor((t % 1) * 1000);
-      return sprintf("%3d.%3dms", ms, us);
-    };
-    _two_digit_year = function(t) {
-      var dt, year;
-      dt = new Date(t);
-      year = dt.getFullYear();
-      if (dt.getMonth() >= 7) {
-        year += 1;
-      }
-      return sprintf("'%02d", year % 100);
-    };
-    _four_digit_year = function(t) {
-      var dt, year;
-      dt = new Date(t);
-      year = dt.getFullYear();
-      if (dt.getMonth() >= 7) {
-        year += 1;
-      }
-      return sprintf("%d", year);
-    };
-    _array = function(t) {
-      return tz(t, "%Y %m %d %H %M %S").split(/\s+/).map(function(e) {
-        return parseInt(e, 10);
-      });
-    };
-    _strftime = function(t, format) {
-      if (_.isFunction(format)) {
-        return format(t);
-      } else {
-        return tz(t, format);
-      }
-    };
-    DatetimeFormatter = (function() {
-      DatetimeFormatter.prototype.format_order = ['microseconds', 'milliseconds', 'seconds', 'minsec', 'minutes', 'hourmin', 'hours', 'days', 'months', 'years'];
-
-      DatetimeFormatter.prototype.strip_leading_zeros = true;
-
-      function DatetimeFormatter() {
-        var fmt, fmt_name, fmt_strings, size, sizes, tmptime, _i, _len;
-        this._formats = {
-          'microseconds': [_us, _ms_dot_us],
-          'milliseconds': ['%3Nms', '%S.%3Ns'],
-          'seconds': ['%Ss'],
-          'minsec': [':%M:%S'],
-          'minutes': [':%M', '%Mm'],
-          'hourmin': ['%H:%M'],
-          'hours': ['%Hh', '%H:%M'],
-          'days': ['%m/%d', '%a%d'],
-          'months': ['%m/%Y', '%b%y'],
-          'years': ['%Y', _two_digit_year, _four_digit_year]
-        };
-        this.formats = {};
-        for (fmt_name in this._formats) {
-          fmt_strings = this._formats[fmt_name];
-          sizes = [];
-          tmptime = tz(new Date());
-          for (_i = 0, _len = fmt_strings.length; _i < _len; _i++) {
-            fmt = fmt_strings[_i];
-            size = (_strftime(tmptime, fmt)).length;
-            sizes.push(size);
-          }
-          this.formats[fmt_name] = [sizes, fmt_strings];
-        }
-        return;
-      }
-
-      DatetimeFormatter.prototype._get_resolution_str = function(resolution_secs, span_secs) {
-        var adjusted_resolution_secs, str;
-        adjusted_resolution_secs = resolution_secs * 1.1;
-        if (adjusted_resolution_secs < 1e-3) {
-          str = "microseconds";
-        } else if (adjusted_resolution_secs < 1.0) {
-          str = "milliseconds";
-        } else if (adjusted_resolution_secs < 60) {
-          if (span_secs >= 60) {
-            str = "minsec";
-          } else {
-            str = "seconds";
-          }
-        } else if (adjusted_resolution_secs < 3600) {
-          if (span_secs >= 3600) {
-            str = "hourmin";
-          } else {
-            str = "minutes";
-          }
-        } else if (adjusted_resolution_secs < 24 * 3600) {
-          str = "hours";
-        } else if (adjusted_resolution_secs < 31 * 24 * 3600) {
-          str = "days";
-        } else if (adjusted_resolution_secs < 365 * 24 * 3600) {
-          str = "months";
-        } else {
-          str = "years";
-        }
-        return str;
-      };
-
-      DatetimeFormatter.prototype.format = function(ticks, num_labels, char_width, fill_ratio, ticker) {
-        var dt, error, fmt, format, formats, good_formats, hybrid_handled, i, labels, next_format, next_ndx, r, resol, resol_ndx, s, span, ss, t, time_tuple_ndx_for_resol, tm, widths, _i, _j, _k, _len, _len1, _ref, _ref1, _ref2;
-        if (num_labels == null) {
-          num_labels = null;
-        }
-        if (char_width == null) {
-          char_width = null;
-        }
-        if (fill_ratio == null) {
-          fill_ratio = 0.3;
-        }
-        if (ticker == null) {
-          ticker = null;
-        }
-        if (ticks.length === 0) {
-          return [];
-        }
-        span = Math.abs(ticks[ticks.length - 1] - ticks[0]) / 1000.0;
-        if (ticker) {
-          r = ticker.resolution;
-        } else {
-          r = span / (ticks.length - 1);
-        }
-        resol = this._get_resolution_str(r, span);
-        _ref = this.formats[resol], widths = _ref[0], formats = _ref[1];
-        format = formats[0];
-        if (char_width) {
-          good_formats = [];
-          for (i = _i = 0, _ref1 = widths.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
-            if (widths[i] * ticks.length < fill_ratio * char_width) {
-              good_formats.push(this.formats[i]);
-            }
-          }
-          if (good_formats.length > 0) {
-            format = good_formats[ticks.length - 1];
-          }
-        }
-        labels = [];
-        resol_ndx = this.format_order.indexOf(resol);
-        time_tuple_ndx_for_resol = {};
-        _ref2 = this.format_order;
-        for (_j = 0, _len = _ref2.length; _j < _len; _j++) {
-          fmt = _ref2[_j];
-          time_tuple_ndx_for_resol[fmt] = 0;
-        }
-        time_tuple_ndx_for_resol["seconds"] = 5;
-        time_tuple_ndx_for_resol["minsec"] = 4;
-        time_tuple_ndx_for_resol["minutes"] = 4;
-        time_tuple_ndx_for_resol["hourmin"] = 3;
-        time_tuple_ndx_for_resol["hours"] = 3;
-        for (_k = 0, _len1 = ticks.length; _k < _len1; _k++) {
-          t = ticks[_k];
-          try {
-            dt = Date(t);
-            tm = _array(t);
-            s = _strftime(t, format);
-          } catch (_error) {
-            error = _error;
-            console.log(error);
-            console.log("Unable to convert tick for timestamp " + t);
-            labels.push("ERR");
-            continue;
-          }
-          hybrid_handled = false;
-          next_ndx = resol_ndx;
-          while (tm[time_tuple_ndx_for_resol[this.format_order[next_ndx]]] === 0) {
-            next_ndx += 1;
-            if (next_ndx === this.format_order.length) {
-              break;
-            }
-            if ((resol === "minsec" || resol === "hourmin") && !hybrid_handled) {
-              if ((resol === "minsec" && tm[4] === 0 && tm[5] !== 0) || (resol === "hourmin" && tm[3] === 0 && tm[4] !== 0)) {
-                next_format = this.formats[this.format_order[resol_ndx - 1]][1][0];
-                s = _strftime(t, next_format);
-                break;
-              } else {
-                hybrid_handled = true;
-              }
-            }
-            next_format = this.formats[this.format_order[next_ndx]][1][0];
-            s = _strftime(t, next_format);
-          }
-          if (this.strip_leading_zeros) {
-            ss = s.replace(/^0+/g, "");
-            if (ss !== s && (ss === '' || !isFinite(ss[0]))) {
-              ss = '0' + ss;
-            }
-            labels.push(ss);
-          } else {
-            labels.push(s);
-          }
-        }
-        return labels;
-      };
-
-      return DatetimeFormatter;
-
-    })();
-    return {
-      "BasicScale": BasicScale,
-      "DatetimeScale": DatetimeScale,
-      "BasicTickFormatter": BasicTickFormatter,
-      "DatetimeFormatter": DatetimeFormatter
-    };
-  });
-
-}).call(this);
-
-//# sourceMappingURL=ticking.js.map
-;
-(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   define('common/socket',["backbone", "underscore", "common/base", "common/load_models"], function(Backbone, _, base, load_models) {
@@ -36525,6 +37995,7 @@ define('widget/textinputtemplate',[],function(){
 
       function WebSocketWrapper(ws_conn_string) {
         this.onmessage = __bind(this.onmessage, this);
+        var _this = this;
         this.auth = {};
         this.ws_conn_string = ws_conn_string;
         this._connected = $.Deferred();
@@ -36534,11 +38005,9 @@ define('widget/textinputtemplate',[],function(){
         } else {
           this.s = new WebSocket(ws_conn_string);
         }
-        this.s.onopen = (function(_this) {
-          return function() {
-            return _this._connected.resolve();
-          };
-        })(this);
+        this.s.onopen = function() {
+          return _this._connected.resolve();
+        };
         this.s.onmessage = this.onmessage;
       }
 
@@ -36554,11 +38023,10 @@ define('widget/textinputtemplate',[],function(){
       };
 
       WebSocketWrapper.prototype.send = function(msg) {
-        return $.when(this.connected).done((function(_this) {
-          return function() {
-            return _this.s.send(msg);
-          };
-        })(this));
+        var _this = this;
+        return $.when(this.connected).done(function() {
+          return _this.s.send(msg);
+        });
       };
 
       WebSocketWrapper.prototype.subscribe = function(topic, auth) {
@@ -36616,8 +38084,9 @@ define('widget/textinputtemplate',[],function(){
 
 }).call(this);
 
-//# sourceMappingURL=socket.js.map
-;
+/*
+//@ sourceMappingURL=socket.js.map
+*/;
 (function() {
   define('server/serverutils',["common/base", "server/serverutils", "common/socket", "common/load_models"], function(base, serverutils, socket, load_models) {
     var Deferreds, Promises, WebSocketWrapper, exports, submodels, utility;
@@ -36636,6 +38105,21 @@ define('widget/textinputtemplate',[],function(){
     exports.plotcontextview = null;
     exports.Promises = Promises;
     utility = {
+      load_one_object_chain: function(docid, objid) {
+        var Config, resp, url;
+        Config = require("common/base").Config;
+        url = "" + Config.prefix + "/bokeh/objinfo/" + docid + "/" + objid;
+        console.log(url);
+        resp = $.get(url);
+        resp.done(function(data) {
+          var all_models, apikey;
+          all_models = data['all_models'];
+          load_models(all_models);
+          apikey = data['apikey'];
+          return submodels(exports.wswrapper, "bokehplot:" + docid, apikey);
+        });
+        return resp;
+      },
       load_user: function() {
         var response;
         response = $.get('/bokeh/userinfo/', {});
@@ -37068,7 +38552,6 @@ define('server/usercontext/wrappertemplate',[],function(){
       };
 
       DocView.prototype.deldoc = function(e) {
-        console.log('foo');
         e.preventDefault();
         this.model.destroy();
         return false;
@@ -37270,7 +38753,7 @@ define('server/usercontext/wrappertemplate',[],function(){
           var docs;
           docs = data['docs'];
           if (options.update) {
-            return _this.update(docs, options);
+            return _this.set(docs, options);
           } else {
             return _this.reset(docs, options);
           }
@@ -37295,10 +38778,26 @@ define('server/usercontext/wrappertemplate',[],function(){
 */;
 (function() {
   define('server/serverrun',["common/base", "./serverutils", "./usercontext/usercontext", "common/has_properties"], function(base, serverutils, usercontext, HasProperties) {
-    var Config, Promises, load, _render, _render_all, _render_one;
+    var Config, Promises, load, load_one_object, _render, _render_all, _render_one;
     Config = base.Config;
     Promises = serverutils.Promises;
     Config.ws_conn_string = "ws://" + window.location.host + "/bokeh/sub";
+    load_one_object = function(docid, objid) {
+      HasProperties.prototype.sync = Backbone.sync;
+      return $(function() {
+        var resp, wswrapper;
+        wswrapper = serverutils.utility.make_websocket();
+        resp = serverutils.utility.load_one_object_chain(docid, objid);
+        return resp.done(function(data) {
+          var model, view;
+          model = base.Collections(data.type).get(objid);
+          view = new model.default_view({
+            model: model
+          });
+          return _render(view.el);
+        });
+      });
+    };
     load = function(title) {
       HasProperties.prototype.sync = Backbone.sync;
       return $(function() {
@@ -37349,7 +38848,8 @@ define('server/usercontext/wrappertemplate',[],function(){
       return $('#PlotPane').append(html);
     };
     return {
-      load: load
+      load: load,
+      load_one_object: load_one_object
     };
   });
 
@@ -37359,7 +38859,7 @@ define('server/usercontext/wrappertemplate',[],function(){
 //@ sourceMappingURL=serverrun.js.map
 */;
 (function() {
-  define('main',['require','exports','module','backbone','underscore','common/base','common/base','common/gmap_plot','common/grid_plot','common/has_parent','common/has_properties','common/plot','common/plotting','common/affine','common/build_views','common/bulk_save','common/continuum_view','common/grid_view_state','common/load_models','common/plot_context','common/plot_widget','common/png_view','common/random','common/safebind','common/svg_colors','common/ticking','common/view_state','mapper/1d/linear_mapper','mapper/1d/categorical_mapper','mapper/2d/grid_mapper','mapper/color/linear_color_mapper','palettes/palettes','renderer/annotation/legend','renderer/glyph/glyph','renderer/glyph/glyph_factory','renderer/guide/categorical_axis','renderer/guide/datetime_axis','renderer/guide/grid','renderer/guide/linear_axis','renderer/overlay/box_selection','renderer/properties','server/embed_core','server/serverrun','server/serverutils','source/column_data_source','ticking/abstract_ticker','ticking/adaptive_ticker','ticking/basic_ticker','ticking/basic_tick_formatter','ticking/categorical_ticker','ticking/categorical_tick_formatter','ticking/composite_ticker','ticking/datetime_ticker','ticking/datetime_tick_formatter','ticking/days_ticker','ticking/months_ticker','ticking/single_interval_ticker','tool/box_select_tool','tool/box_zoom_tool','tool/crosshair_tool','tool/data_range_box_select_tool','tool/embed_tool','tool/hover_tool','tool/pan_tool','tool/preview_save_tool','tool/reset_tool','tool/resize_tool','tool/wheel_zoom_tool','tool/object_explorer_tool','widget/data_slider','server/serverrun','widget/hbox','widget/hbox','widget/vboxmodelform','widget/textinput','util/object_explorer'],function(require, exports, module) {
+  define('main',['require','exports','module','backbone','underscore','common/base','common/base','common/gmap_plot','common/grid_plot','common/has_parent','common/has_properties','common/plot','common/plotting','common/affine','common/build_views','common/bulk_save','common/continuum_view','common/grid_view_state','common/load_models','common/plot_context','common/plot_widget','common/png_view','common/random','common/safebind','common/svg_colors','common/view_state','mapper/1d/linear_mapper','mapper/1d/categorical_mapper','mapper/2d/grid_mapper','mapper/color/linear_color_mapper','palettes/palettes','renderer/annotation/legend','renderer/glyph/glyph','renderer/glyph/glyph_factory','renderer/guide/categorical_axis','renderer/guide/datetime_axis','renderer/guide/grid','renderer/guide/linear_axis','renderer/overlay/box_selection','renderer/properties','server/embed_core','server/serverrun','server/serverutils','source/column_data_source','ticking/abstract_ticker','ticking/adaptive_ticker','ticking/basic_ticker','ticking/basic_tick_formatter','ticking/categorical_ticker','ticking/categorical_tick_formatter','ticking/composite_ticker','ticking/datetime_ticker','ticking/datetime_tick_formatter','ticking/days_ticker','ticking/months_ticker','ticking/single_interval_ticker','ticking/years_ticker','tool/box_select_tool','tool/box_zoom_tool','tool/crosshair_tool','tool/data_range_box_select_tool','tool/embed_tool','tool/hover_tool','tool/pan_tool','tool/preview_save_tool','tool/reset_tool','tool/resize_tool','tool/wheel_zoom_tool','tool/object_explorer_tool','widget/data_slider','widget/hbox','widget/vbox','widget/vboxmodelform','widget/textinput','util/object_explorer','server/serverrun','server/serverrun'],function(require, exports, module) {
     var Bokeh, glyph_factory;
     if (!window.Float64Array) {
       console.warn("Float64Array is not supported. Using generic Array instead.");
@@ -37389,7 +38889,6 @@ define('server/usercontext/wrappertemplate',[],function(){
     Bokeh.Random = require("common/random");
     Bokeh.safebind = require("common/safebind");
     Bokeh.SVGColors = require("common/svg_colors");
-    Bokeh.ticking = require("common/ticking");
     Bokeh.ViewState = require("common/view_state");
     Bokeh.LinearMapper = require("mapper/1d/linear_mapper");
     Bokeh.CategoricalMapper = require("mapper/1d/categorical_mapper");
@@ -37453,6 +38952,7 @@ define('server/usercontext/wrappertemplate',[],function(){
     Bokeh.DaysTicker = require("ticking/days_ticker");
     Bokeh.MonthsTicker = require("ticking/months_ticker");
     Bokeh.SingleIntervalTicker = require("ticking/single_interval_ticker");
+    Bokeh.YearsTicker = require("ticking/years_ticker");
     Bokeh.BoxSelectTool = require("tool/box_select_tool");
     Bokeh.BoxZoomTool = require("tool/box_zoom_tool");
     Bokeh.CrosshairTool = require("tool/crosshair_tool");
@@ -37466,12 +38966,13 @@ define('server/usercontext/wrappertemplate',[],function(){
     Bokeh.WheelZoomTool = require("tool/wheel_zoom_tool");
     Bokeh.ObjectExplorerTool = require("tool/object_explorer_tool");
     Bokeh.DataSlider = require("widget/data_slider");
-    Bokeh.server_page = require("server/serverrun").load;
     Bokeh.HBox = require("widget/hbox");
-    Bokeh.VBox = require("widget/hbox");
+    Bokeh.VBox = require("widget/vbox");
     Bokeh.VBoxModelForm = require("widget/vboxmodelform");
     Bokeh.TextInput = require("widget/textinput");
     Bokeh.ObjectExplorer = require("util/object_explorer");
+    Bokeh.one_object_page = require("server/serverrun").load_one_object;
+    Bokeh.server_page = require("server/serverrun").load;
     exports.Bokeh = Bokeh;
     return Bokeh;
   });
@@ -37481,6 +38982,7 @@ define('server/usercontext/wrappertemplate',[],function(){
 /*
 //@ sourceMappingURL=main.js.map
 */;
+
   //The modules for your project will be inlined above
   //this snippet. Ask almond to synchronously require the
   //module value for 'main' here and return it as the
