@@ -134,10 +134,11 @@ class StockApp(BokehApplet):
     def make_source(self):
         self.source = ColumnDataSource(data=self.df)
         
-    def line_plot(self, ticker):
+    def line_plot(self, ticker, x_range=None):
         plot = circle('date', ticker, 
                       title=ticker,
                       size=2,
+                      x_range=x_range,
                       x_axis_type='datetime',
                       source=self.source,
                       title_text_font_size="10pt",
@@ -174,7 +175,7 @@ class StockApp(BokehApplet):
                            nonselection_alpha=0.02
         )
         self.line_plot1 = self.line_plot(ticker1)
-        self.line_plot2 = self.line_plot(ticker2)
+        self.line_plot2 = self.line_plot(ticker2, self.line_plot1.x_range)
         self.hist_plots()
 
     def hist_plots(self):
