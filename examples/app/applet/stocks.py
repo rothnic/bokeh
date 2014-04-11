@@ -105,15 +105,20 @@ class StockApp(BokehApplet):
         
         self.modelform = StockInputModel()
         self.modelform.create_inputs(session)
-        ticker1 = self.modelform.ticker1
-        ticker2 = self.modelform.ticker2
         self.pretext = PreText(text="")
         self.make_source()
-        self.make_plots(ticker1, ticker2)
+        self.make_plots()
         self.make_stats()
         self.set_children()
         self.add_all(session)
+    @property
+    def ticker1(self):
+        return self.modelform.ticker1
         
+    @property
+    def ticker2(self):
+        return self.modelform.ticker2
+
     @property
     def df(self):
         return get_data(self.modelform.ticker1, self.modelform.ticker2)
@@ -156,7 +161,9 @@ class StockApp(BokehApplet):
                     x_range=Range1d(start=start, end=end),
                     y_range=Range1d(start=0, end=top))
         
-    def make_plots(self, ticker1, ticker2):
+    def make_plots(self):
+        ticker1 = self.ticker1
+        ticker2 = self.ticker2
         self.plot = circle(ticker1 + "_returns", ticker2 + "_returns",
                            size=2,
                            title="%s vs %s" %(ticker1, ticker2),
@@ -193,10 +200,8 @@ class StockApp(BokehApplet):
         new : new value of attr
         """
         if attrname in ("ticker1", "ticker2"):
-            ticker1 = self.modelform.ticker1
-            ticker2 = self.modelform.ticker2
             self.make_source()
-            self.make_plots(ticker1, ticker2)
+            self.make_plots()
             self.set_children()
             
     def setup_events(self):
