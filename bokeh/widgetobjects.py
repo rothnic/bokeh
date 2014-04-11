@@ -136,6 +136,8 @@ class BokehApplet(PlotObject):
     
 class Paragraph(PlotObject):
     text = String()
+    width = Int(500)
+    height = Int(400)
     
 class PreText(Paragraph):
     pass

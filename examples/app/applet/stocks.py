@@ -105,7 +105,7 @@ class StockApp(BokehApplet):
         
         self.modelform = StockInputModel()
         self.modelform.create_inputs(session)
-        self.pretext = PreText(text="")
+        self.pretext = PreText(text="", width=500)
         self.make_source()
         self.make_plots()
         self.make_stats()
