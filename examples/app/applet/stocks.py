@@ -43,7 +43,31 @@ class StockInputModel(VBoxModelForm):
          "options" : ["AAPL","GOOG","INTC","BRCM","YHOO"]
      }
     ]
+
+def get_ticker_data(ticker):
+    fname = join(data_dir, "table_%s.csv" % ticker.lower())
+    data = pd.read_csv(fname, 
+                        names=['date', 'foo', 'o', 'h', 'l', 'c', 'v'], 
+                        header=False,
+                        parse_dates=['date'])
+    data = data.set_index('date')
+    data = pd.DataFrame({ticker : data.c, ticker + "_returns" : data.c.diff()})
+    return data
     
+pd_cache = {}
+
+def get_data(ticker1, ticker2):
+    if pd_cache.get((ticker1, ticker2)) is not None:
+        return pd_cache.get((ticker1, ticker2))
+    data1 = get_ticker_data(ticker1)
+    data2 = get_ticker_data(ticker2)
+    data = pd.concat([data1, data2], axis=1)
+    data = data.dropna()
+    pd_cache[(ticker1, ticker2)]= data
+    return data
+
+
+
 class StockApp(BokehApplet):
     #layout of app
     jsmodel = "VBox"
@@ -69,24 +93,6 @@ class StockApp(BokehApplet):
     def __init__(self, *args, **kwargs):
         super(StockApp, self).__init__(*args, **kwargs)
         self._dfs = {}
-    def get_data(self, ticker1, ticker2):
-        fname = join(data_dir, "table_%s.csv" % ticker1.lower())
-        data1 = pd.read_csv(fname, 
-                            names=['date', 'foo', 'o', 'h', 'l', 'c', 'v'], 
-                            header=False,
-                            parse_dates=['date'])
-        data1 = data1.set_index('date')
-        fname = join(data_dir, "table_%s.csv" % ticker2.lower())        
-        data2 = pd.read_csv(fname, 
-                            names=['date', 'foo', 'o', 'h', 'l', 'c', 'v'], 
-                            header=False,
-                            parse_dates=['date'])
-        data2 = data2.set_index('date')
-        data = pd.DataFrame({ticker1 : data1.c, ticker2 : data2.c})
-        data[ticker1 + "_returns"] = data[ticker1].diff()
-        data[ticker2 + "_returns"] = data[ticker2].diff()
-        data = data.dropna()
-        return data
         
     def create(self, session):
         """
@@ -110,12 +116,8 @@ class StockApp(BokehApplet):
         
     @property
     def df(self):
-        ticker1 = self.modelform.ticker1
-        ticker2 = self.modelform.ticker2
-        if self._dfs.get((ticker1,ticker2)) is None:
-            df = self.get_data(ticker1, ticker2)
-            self._dfs[ticker1, ticker2] = df
-        return self._dfs[ticker1, ticker2]
+        return get_data(self.modelform.ticker1, self.modelform.ticker2)
+        
     @property
     def selected_df(self):
         pandas_df = self.df
@@ -127,6 +129,33 @@ class StockApp(BokehApplet):
     def make_source(self):
         self.source = ColumnDataSource(data=self.df)
         
+    def line_plot(self, ticker):
+        plot = circle('date', ticker, 
+                      title=ticker,
+                      size=2,
+                      x_axis_type='datetime',
+                      source=self.source,
+                      title_text_font_size="10pt",
+                      plot_width=1000, plot_height=200,
+                      nonselection_alpha=0.02,
+                      tools="pan,wheel_zoom,select")
+        return plot
+    def hist_plot(self, ticker):
+        global_hist, global_bins = np.histogram(self.df[ticker + "_returns"], bins=50)
+        hist, bins = np.histogram(self.selected_df[ticker + "_returns"], bins=50)
+        width = 0.7 * (bins[1] - bins[0]) 
+        center = (bins[:-1] + bins[1:]) / 2 
+        start = global_bins.min()
+        end = global_bins.max()
+        top = hist.max()
+        return rect(center, hist/2.0, width, hist, 
+                    title="%s hist" % ticker,
+                    plot_width=500, plot_height=200,
+                    tools="",
+                    title_text_font_size="10pt",
+                    x_range=Range1d(start=start, end=end),
+                    y_range=Range1d(start=0, end=top))
+        
     def make_plots(self, ticker1, ticker2):
         self.plot = circle(ticker1 + "_returns", ticker2 + "_returns",
                            size=2,
@@ -137,60 +166,15 @@ class StockApp(BokehApplet):
                            title_text_font_size="10pt",
                            nonselection_alpha=0.02
         )
-        self.line_plot1 = circle('date', ticker1, 
-                                 title=ticker1,
-                                 size=2,
-                                 x_axis_type='datetime',
-                                 source=self.source,
-                                 title_text_font_size="10pt",
-                                 plot_width=1000, plot_height=200,
-                                 nonselection_alpha=0.02,
-                                 tools="pan,wheel_zoom,select",)
-        self.line_plot2 = circle("date", ticker2, 
-                                 title=ticker2,
-                                 size=2,
-                                 x_range=self.line_plot1.x_range,
-                                 x_axis_type='datetime',
-                                 title_text_font_size="10pt",
-                                 source=self.source,
-                                 plot_width=1000, plot_height=200,
-                                 nonselection_alpha=0.02,
-                                 tools="pan,wheel_zoom,select",
-        )
+        self.line_plot1 = self.line_plot(ticker1)
+        self.line_plot2 = self.line_plot(ticker2)
         self.hist_plots()
 
     def hist_plots(self):
         ticker1 = self.modelform.ticker1
         ticker2 = self.modelform.ticker2
-        
-        global_hist, global_bins = np.histogram(self.df[ticker1 + "_returns"], bins=50)
-        hist, bins = np.histogram(self.selected_df[ticker1 + "_returns"], bins=50)
-        width = 0.7 * (bins[1] - bins[0]) 
-        center = (bins[:-1] + bins[1:]) / 2 
-        start = global_bins.min()
-        end = global_bins.max()
-        top = hist.max()
-        self.hist1 = rect(center, hist/2.0, width, hist, 
-                          title="%s hist" % ticker1,
-                          plot_width=500, plot_height=200,
-                          tools="",
-                          title_text_font_size="10pt",
-                          x_range=Range1d(start=start, end=end),
-                          y_range=Range1d(start=0, end=top))
-        global_hist, global_bins = np.histogram(self.df[ticker2 + "_returns"], bins=50)
-        hist, bins = np.histogram(self.selected_df[ticker2 + "_returns"], bins=50)
-        width = 0.7 * (bins[1] - bins[0]) 
-        center = (bins[:-1] + bins[1:]) / 2 
-        start = global_bins.min()
-        end = global_bins.max()
-        top = hist.max()
-        self.hist2 = rect(center, hist/2.0, width, hist,
-                          title="%s hist" % ticker2,
-                          plot_width=500, plot_height=200,
-                          tools="",
-                          title_text_font_size="10pt",
-                          x_range=Range1d(start=start, end=end),
-                          y_range=Range1d(start=0, end=top))
+        self.hist1 = self.hist_plot(ticker1)
+        self.hist2 = self.hist_plot(ticker2)
         
     def set_children(self):
         self.children = [self.mainrow, self.histrow, self.line_plot1, self.line_plot2]
@@ -231,7 +215,7 @@ class StockApp(BokehApplet):
 # the following addes "/exampleapp" as a url which renders StockApp
         
 bokeh_url = "http://localhost:5006"
-StockApp.add_route("/backtest", bokeh_url)
+StockApp.add_route("/stocks", bokeh_url)
 
 
 if __name__ == "__main__":
