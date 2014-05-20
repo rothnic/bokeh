@@ -14,6 +14,7 @@ require.config
         sprintf:           "vendor/sprintf/src/sprintf"
         rbush:             "vendor/rbush/rbush"
         jstree:            "vendor/jstree/dist/jstree"
+    wrapShim: true
     shim:
         sprintf:
             exports: 'sprintf'
@@ -21,5 +22,5 @@ require.config
             deps: ["numeral"]
             exports: "$.fn.handsontable"
         jqrangeslider:
-            deps: ["jquery_ui/core", "jquery_ui/widget", "jquery_mousewheel"]
+            deps: ["jquery_ui/core", "jquery_ui/widget", "jquery_ui/mouse", "jquery_mousewheel"]
             exports: "$.fn.rangeSlider"
