@@ -13,7 +13,7 @@ from .objects import (
     ColumnDataSource, CrosshairTool, DataRange1d, DatetimeAxis,
     EmbedTool, FactorRange, Grid, HoverTool, Legend, LinearAxis,
     ObjectExplorerTool, PanTool, Plot, PreviewSaveTool, Range, Range1d,
-    ResetTool, ResizeTool, WheelZoomTool, Tool
+    ResetTool, ResizeTool, WheelZoomTool, Tool, ClickTool
 )
 from .properties import ColorSpec
 import warnings
@@ -339,6 +339,8 @@ def _new_xy_plot(x_range=None, y_range=None, plot_width=None, plot_height=None,
                 "data (x, y)": "($x, $y)",
                 "canvas (x, y)": "($sx, $sy)",
             })
+        elif tool == "click":
+            tool_obj = ClickTool(plot=p)
         elif tool == "previewsave":
             tool_obj = PreviewSaveTool(plot=p)
         elif tool == "embed":

@@ -12,7 +12,7 @@ from six import add_metaclass, iteritems
 from six.moves.urllib.parse import urlsplit
 
 from .embed import autoload_static, autoload_server
-from .properties import HasProps, MetaHasProps, Instance
+from .properties import HasProps, MetaHasProps, Instance, String
 from .protocol import serialize_json
 from .utils import get_ref, convert_references, dump
 

@@ -4,9 +4,9 @@ import numpy as np
 from six.moves import zip
 from collections import OrderedDict
 from bokeh.plotting import *
-from bokeh.objects import HoverTool, Range1d
+from bokeh.objects import ClickTool, Range1d
 
-TOOLS="pan,wheel_zoom,box_zoom,reset,hover,previewsave"
+TOOLS="pan,wheel_zoom,box_zoom,reset,click,previewsave"
 
 xx, yy = np.meshgrid(range(0,101,4), range(0,101,4))
 x = xx.flatten()
@@ -38,22 +38,13 @@ hold()
 
 circle(x, y, radius=radii, source=source, tools=TOOLS,
        fill_color=colors, fill_alpha=0.6,
-       line_color=None, Title="Hoverful Scatter")
+       line_color=None, Title="Hoverful Scatter", name="foo")
 
 text(x, y, text=inds, alpha=0.5, text_font_size="5pt",
      text_baseline="middle", text_align="center", angle=0)
 
-# We want to add some fields for the hover tool to interrogate, but first we
-# have to get ahold of the tool. This will be made easier in future releases.
-hover = [t for t in curplot().tools if isinstance(t, HoverTool)][0]
+click = [t for t in curplot().tools if isinstance(t, ClickTool)][0]
+click.names.append("foo")
 
-hover.tooltips = OrderedDict([
-    ("index", "$index"),
-    ("(x,y)", "($x, $y)"),
-    ("radius", "@radius"),
-    ("fill color", "$color[hex, swatch]:fill_color"),
-    ("foo", "@foo"),
-    ("bar", "@bar"),
-])
 
 show()  # open a browser
