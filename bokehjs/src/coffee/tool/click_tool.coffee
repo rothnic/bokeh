@@ -8,6 +8,7 @@ define [
   class ClickToolView extends Tool.View
     initialize: (options) ->
       super(options)
+      @listenTo(@, 'clicked', ((selected, ds) -> console.log selected, ds))
 
     view_coords: (sx, sy) ->
       [vx, vy] = [
@@ -41,8 +42,13 @@ define [
         @tool_button.addClass('active')
       )
 
-      @plot_view.canvas.bind("click", (e) =>
-        if not @active
+      @plot_view.canvas.bind("mousedown", (e) =>
+        @start_posx = e.pageX
+        @start_posy = e.pageY
+      )
+
+      @plot_view.canvas.bind("mouseup", (e) =>
+        if @start_posx != e.pageX or @start_posy != e.pageY
           return
         offset = $(e.currentTarget).offset()
         left = if offset? then offset.left else 0
