@@ -20,8 +20,8 @@ define [
 
       tool_name = "click_tool"
 
-      @tool_button = $("<button class='bk-bs-btn bk-bs-btn-default bk-bs-btn-sm'> Click </button>")
-      @plot_view.$el.find('.button_bar').append(@tool_button)
+      @tool_button = $("<button class='bk-toolbar-button'> Click </button>")
+      @plot_view.$el.find('.bk-button-bar').append(@tool_button)
 
       @tool_button.click(=>
         if @active
@@ -90,7 +90,7 @@ define [
         if selected == null
           continue
 
-        console.log renderer, selected
+        @trigger('clicked', selected, ds)
 
       return null
 

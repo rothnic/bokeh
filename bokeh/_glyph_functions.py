@@ -42,7 +42,6 @@ def _glyph_function(glyphclass, argnames, docstring, xfields=["x"], yfields=["y"
         name = kwargs.pop('name', None)
         if name:
             plot._id = name
-        print "NAME", name
 
         select_tool = _get_select_tool(plot)
 
