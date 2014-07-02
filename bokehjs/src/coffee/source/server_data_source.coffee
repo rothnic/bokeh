@@ -44,17 +44,17 @@ define [
       if @callbacks[column_data_source.get('id')]
         for entry in @callbacks[column_data_source.get('id')]
           @stopListening.apply(this, entry)
-    
+
     update_url : () ->
       owner_username = @get('owner_username')
-      prefix = @get_base().Config.prefix     
-      url = "#{prefix}bokeh/data/#{owner_username}/#{@get('doc')}/#{@get('id')}"    
+      prefix = @get_base().Config.prefix
+      url = "#{prefix}bokeh/data/#{owner_username}/#{@get('doc')}/#{@get('id')}"
 
-    listen_for_line1d_updates : (column_data_source, 
-                                  plot_x_range, plot_y_range, 
+    listen_for_line1d_updates : (column_data_source,
+                                  plot_x_range, plot_y_range,
                                   domain_range, screen_range
                                   primary_column, domain_name, columns, input_params) ->
-      
+
       plot_state = {screen_x: plot_x_range, screen_y: plot_y_range}
       #ensure we only have one set of events bound
       @stoplistening_for_updates(column_data_source)
@@ -147,10 +147,10 @@ define [
       )
 
 
-    listen_for_heatmap_updates : (column_data_source, 
+    listen_for_heatmap_updates : (column_data_source,
         plot_x_range, plot_y_range,
         x_data_range, y_data_range, input_params) ->
-      
+
       plot_state = {data_x: x_data_range, data_y:y_data_range, screen_x: plot_x_range, screen_y: plot_y_range}
 
       #ensure we only have one set of events bound
@@ -204,6 +204,44 @@ define [
           resample_parameters : JSON.stringify(params)
           plot_state: JSON.stringify(plot_state)
       )
+    listen_for_genomic_coverage_updates : (column_data_source,
+                                  plot_x_range, plot_y_range,
+                                  domain_range, screen_range
+                                  primary_column, domain_name, columns, input_params) =>
+
+      plot_state = {screen_x: plot_x_range, screen_y: plot_y_range}
+      #ensure we only have one set of events bound
+      @stoplistening_for_updates(column_data_source)
+      @genomic_coverage_update(column_data_source, plot_state, domain_range, screen_range)
+      throttle = _.throttle(@genomic_coverage_update, 300)
+      console.log(input_params)
+      callback = () => throttle(column_data_source, plot_state, domain_range, screen_range)
+      @listenTo(screen_range, 'change', callback)
+      @listenTo(domain_range, 'change', callback)
+      @callbacks[column_data_source.get('id')] = [
+        [screen_range, 'change', callback],
+        [domain_range, 'change', callback]
+      ]
+
+    genomic_coverage_update : (column_data_source, plot_state, domain_range, screen_range) =>
+      domain_resolution = (screen_range.get('end') - screen_range.get('start')) / 2
+      domain_resolution = Math.floor(domain_resolution)
+      domain_limit = [domain_range.get('start'), domain_range.get('end')]
+      domain_name = @get('transform').domain_name
+      primary_column = @get('transform').primary_column
+      params = [primary_column, domain_name, domain_limit, domain_resolution]
+      $.ajax(
+        dataType: 'json'
+        url : @update_url()
+        xhrField :
+          withCredentials : true
+        success : (data) ->
+          column_data_source.set('data', data.data)
+        data :
+          resample_parameters : JSON.stringify(params)
+          plot_state: JSON.stringify(plot_state)
+      )
+
 
   class ServerDataSources extends Backbone.Collection
     model: ServerDataSource

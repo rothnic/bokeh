@@ -7,7 +7,7 @@ define [
 ], (_, HasParent, PlotWidget, Properties) ->
 
   class GlyphView extends PlotWidget
- 
+
     #TODO: There are glyph sub-type-vs-resample_op concordance issues...
     setup_server_data : () ->
       serversource = @mget_obj('server_data_source')
@@ -18,7 +18,7 @@ define [
       @set_data(false)
 
       transform_params = serversource.attributes['transform']
-      resample_op = transform_params['resample']  
+      resample_op = transform_params['resample']
       x_range = @plot_view.view_state.get('inner_range_horizontal')
       y_range = @plot_view.view_state.get('inner_range_vertical')
 
@@ -47,17 +47,19 @@ define [
         )
       else if (resample_op == 'abstract rendering')
         serversource.listen_for_ar_updates(
-           @mget_obj('data_source'), 
+           @mget_obj('data_source'),
            x_range,  y_range,
            @plot_view.x_range,
            @plot_view.y_range,
            transform_params)
+      ##lab7
+      else if (resample_op == 'genomic_coverage')
+        serversource.listen_for_genomic_coverage_updates(@mget_obj('data_source'),
+          x_range, y_range, @plot_view.x_range, x_range, transform_params
+        )
+      ##endlab7
       else
         throw new Error("Unkonwn resample op '#{resample_op}'")
-
-
-
-
 
     initialize: (options) ->
       super(options)
