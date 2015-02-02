@@ -59,7 +59,7 @@ define [
       @$('.bk-column-list').append(@columnview.el)
 
       @$('.bk-crossfilter-configuration').height(@mget('height'))
-      @$('.bk-crossfilter-configuration').width(400)
+      @$('.bk-crossfilter-configuration').width('100%')
       return this
 
   class CrossFilter extends HasParent

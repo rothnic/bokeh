@@ -1,4 +1,6 @@
 @import "bootstrap.less";
+@import "variables.less";
+@import "bootswatch.less";
 
 .bk-crossfilter-row {
     .bk-bs-row;
@@ -20,15 +22,16 @@
     background-color: #CE603D !important;
 }
 
-.aligntable {
-    vertical-align: top;
+.bk-plot-canvas-wrapper {
+  padding: 5px 5px 5px 5px;
+}
+
+.bk-column-panel {
+  padding-right: 7px;
+  padding-left: 7px;
 }
 
 .bk-crossfilter-container {
-    height: 100%;
-    width: 100%;
-    whitespace: nowrap;
-    display: inline-block;
     overflow: auto;
 }
 
@@ -36,7 +39,7 @@
     overflow: auto;
     float: left;
     padding-right: 0 !important;
-    padding-left: 15px !important;
+    padding-left: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
@@ -48,8 +51,8 @@
 .bk-column-list {
     overflow-y: auto;
     height: 100%;
-    padding-right: 0;
-    padding-left: 0;
+    padding-right: 2px;
+    padding-left: 2px;
 }
 
 .bk-table {
@@ -71,8 +74,8 @@
 
 .bk-filters-facets {
     height: 100%;
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .bk-filters {
@@ -111,10 +114,10 @@
     padding-left: 0;
 }
 
-.bk-crossfilter-plot {
-    float: left;
-    display: inline-block;
-}
+//.bk-crossfilter-plot {
+//    float: left;
+//    display: inline-block;
+//}
 
 .bk-facet-label {
     .bk-bs-label;

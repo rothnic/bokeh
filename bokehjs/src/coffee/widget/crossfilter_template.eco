@@ -1,18 +1,13 @@
 <div class="bk-crossfilter-container">
 
-  <table>
-
-    <tr>
-
-      <td class="aligntable">
-
+    <div class="col-md-4 bk-column-panel">
         <div class="bk-crossfilter-configuration bk-bs-container">
 
           <div class="bk-crossfilter-row">
 
-            <div class="col-md-5 bk-column-list" />
+            <div class="col-md-4 bk-column-list" />
 
-            <div class="col-md-7 bk-filters-facets">
+            <div class="col-md-8 bk-filters-facets">
 
               <div class="bk-bs-panel bk-bs-panel-primary bk-filters">
                 <div class="bk-bs-panel-heading bk-crossfilter-panel-heading"> Filter </div>
@@ -39,10 +34,8 @@
           </div>
 
         </div>
-
-      </td>
-
-      <td class="aligntable">
+        </div>
+    <div class="col-md-8 bk-column-panel">
 
         <div class="bk-plot-selection">
 
@@ -58,10 +51,6 @@
         </div>
 
         <div class="bk-crossfilter-plot" />
-      </td>
 
-    </tr>
-
-  </table>
-
+    </div>
 </div>
