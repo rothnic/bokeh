@@ -6,7 +6,7 @@
           <div class="bk-crossfilter-row">
 
             <div class="col-lg-4 col-md-4 bk-column-list" />
-
+        <!-- todo: fix responsive columns -->
             <div class="col-lg-8 col-md-8 bk-filters-facets">
 
               <div class="bk-bs-panel bk-bs-panel-primary bk-filters">
