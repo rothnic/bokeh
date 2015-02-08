@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from ..plot_object import PlotObject
 from ..properties import HasProps
 from ..properties import Any, Int, String, Instance, List, Dict, Either
+from .source_metadata import ColumnMetadata
 
 class DataSource(PlotObject):
     """ A base class for data source types. ``DataSource`` is
@@ -64,6 +65,9 @@ class ColumnDataSource(DataSource):
     Mapping of column names to sequences of data. The data can be, e.g,
     Python lists or tuples, NumPy arrays, etc.
     """)
+
+    metadata = Dict(String, Instance(ColumnMetadata), help="""
+    Mapping of column names to containers of column metadata.""")
 
     def __init__(self, *args, **kw):
         """ If called with a single argument that is a dict, treat
@@ -165,6 +169,23 @@ class ColumnDataSource(DataSource):
         except (ValueError, KeyError):
             import warnings
             warnings.warn("Unable to find column '%s' in data source" % name)
+
+    def get_meta(self, col_name):
+        """Returns the possible types the column could fit."""
+
+        if len(self.metadata) == 0:
+            self.classify_columns()
+
+        return self.metadata[col_name]
+
+    def classify_columns(self):
+        """Generates metadata types for each column, only when first requested."""
+
+        df = self.to_df()
+        cols = df.columns
+
+        for col in cols:
+            self.metadata[col] = ColumnMetadata(name=col, col_data=df[col])
 
     def push_notebook(self):
         """ Update date for a plot in the IPthon notebook in place.
