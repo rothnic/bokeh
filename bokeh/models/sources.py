@@ -2,8 +2,7 @@ from __future__ import absolute_import
 
 from ..plot_object import PlotObject
 from ..properties import HasProps
-from ..properties import Any, Int, String, Instance, List, Dict, Either
-from .source_metadata import ColumnMetadata
+from ..properties import Any, Int, String, Instance, List, Dict, Either, Bool
 
 class DataSource(PlotObject):
     """ A base class for data source types. ``DataSource`` is
@@ -65,9 +64,6 @@ class ColumnDataSource(DataSource):
     Mapping of column names to sequences of data. The data can be, e.g,
     Python lists or tuples, NumPy arrays, etc.
     """)
-
-    metadata = Dict(String, Instance(ColumnMetadata), help="""
-    Mapping of column names to containers of column metadata.""")
 
     def __init__(self, *args, **kw):
         """ If called with a single argument that is a dict, treat
@@ -170,23 +166,6 @@ class ColumnDataSource(DataSource):
             import warnings
             warnings.warn("Unable to find column '%s' in data source" % name)
 
-    def get_meta(self, col_name):
-        """Returns the possible types the column could fit."""
-
-        if len(self.metadata) == 0:
-            self.classify_columns()
-
-        return self.metadata[col_name]
-
-    def classify_columns(self):
-        """Generates metadata types for each column, only when first requested."""
-
-        df = self.to_df()
-        cols = df.columns
-
-        for col in cols:
-            self.metadata[col] = ColumnMetadata(name=col, col_data=df[col])
-
     def push_notebook(self):
         """ Update date for a plot in the IPthon notebook in place.
 
@@ -216,27 +195,60 @@ class ColumnDataSource(DataSource):
         """.format(model=model, id=id, json=json)
         display.display_javascript(js, raw=True)
 
-class ServerDataSource(DataSource):
-    """ A data source that referes to data located on a Bokeh server.
-
-    The data from the server is loaded on-demand by the client.
-
-    """
-
+class RemoteSource(DataSource):
     data_url = String(help="""
-    The URL to the Bokeh server endpoint for the data.
+    The URL to the endpoint for the data.
     """)
-
-    owner_username = String(help="""
-    A username to use for authentication when Bokeh server is operating
-    in multi-user mode.
-    """)
-
     data = Dict(String, Any, help="""
     Additional data to include directly in this data source object. The
     columns provided here are merged with those from the Bokeh server.
     """)
+    polling_interval = Int(help="""
+    polling interval for updating data source in milliseconds
+    """)
 
+class AjaxDataSource(RemoteSource):
+    method = String('POST', help="http method - GET or POST")
+
+class BlazeDataSource(RemoteSource):
+    #blaze parts
+    expr = Dict(String, Any(), help="""
+    blaze expression graph in json form
+    """)
+    namespace = Dict(String, Any(), help="""
+    namespace in json form for evaluating blaze expression graph
+    """)
+    local = Bool(help="""
+    Whether this data source is hosted by the bokeh server or not.
+    """)
+
+    def from_blaze(self, remote_blaze_obj, local=True):
+        from blaze.server import to_tree
+        # only one Client object, can hold many datasets
+        assert len(remote_blaze_obj._leaves()) == 1
+        leaf = remote_blaze_obj._leaves()[0]
+        blaze_client = leaf.data
+        json_expr = to_tree(remote_blaze_obj, {leaf : ':leaf'})
+        self.data_url = blaze_client.url + "/compute.json"
+        self.local = local
+        self.expr = json_expr
+
+    def to_blaze(self):
+        from blaze.server.client import Client
+        from blaze.server import from_tree
+        from blaze import Data, Symbol
+        # hacky - blaze urls have `compute.json` in it, but we need to strip it off
+        # to feed it into the blaze client lib
+        c = Client(self.data_url.rsplit('compute.json', 1)[0])
+        d = Data(c)
+        return from_tree(self.expr, {':leaf' : d})
+
+
+class ServerDataSource(BlazeDataSource):
+    """ A data source that referes to data located on a Bokeh server.
+
+    The data from the server is loaded on-demand by the client.
+    """
     # Paramters of data transformation operations
     # The 'Any' is used to pass primtives around.
     # TODO: (jc) Find/create a property type for 'any primitive/atomic value'

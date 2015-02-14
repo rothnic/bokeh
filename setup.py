@@ -48,7 +48,6 @@ import versioneer
 
 ROOT = dirname(realpath(__file__))
 BOKEHJSROOT = join(ROOT, 'bokehjs')
-print(BOKEHJSROOT)
 BOKEHJSBUILD = join(BOKEHJSROOT, 'build')
 CSS = join(BOKEHJSBUILD, 'css')
 JS  = join(BOKEHJSBUILD, 'js')
@@ -84,7 +83,6 @@ def package_path(path, filters=()):
             for f in files:
                 if not filters or f.endswith(filters):
                     package_data.append(join(path, f))
-
 # You can't install Bokeh in a virtualenv because the lack of getsitepackages()
 # This is an open bug: https://github.com/pypa/virtualenv/issues/355
 # And this is an intended PR to fix it: https://github.com/pypa/virtualenv/pull/508
@@ -348,7 +346,8 @@ package_path(join(SERVER, 'templates'))
 package_path(join('bokeh', '_templates'))
 package_path(join('bokeh', 'sampledata'), sampledata_suffixes)
 package_path(join('bokeh', 'server', 'redis.conf'))
-
+package_path(join(SERVER, 'tests', 'config'))
+package_path(join(SERVER, 'tests', 'data'))
 scripts = ['bokeh-server', 'websocket_worker.py']
 
 if '--user' in sys.argv:
@@ -413,7 +412,7 @@ REQUIRES = [
         'pyzmq>=14.3.1',
         'tornado>=4.0.1',
         # cli
-        'click>=3.3',
+        #'click>=3.3',
         # tests
         #'nose>=1.3.0',
         #'mock>=1.0.1',
@@ -464,11 +463,13 @@ setup(
         'bokeh.server',
         'bokeh.server.models',
         'bokeh.server.views',
+        'bokeh.server.blaze',
         'bokeh.server.utils',
         'bokeh.server.tests',
         'bokeh.sphinxext',
         'bokeh.tests',
         'bokeh.transforms'
+
     ],
     package_data={'bokeh': package_data},
     author='Continuum Analytics',
