@@ -10,6 +10,16 @@ facets(data, x='col2') -> [facet('a', a_data, x=1, y=1)]
 
 """
 
+# ToDo: Address crossing vs. nesting
+"""
+Crossing generates all possible combinations, even impossible ones.
+
+Nesting only uses the possible combinations. Not sure how to only
+collect the possible combinations, except by assuming that only the
+possible combinations exist. This could simply be a unique on multiple
+columns simultaneously, which will only detect the combinations that exist.
+"""
+
 from itertools import product
 
 class Coord(object):
