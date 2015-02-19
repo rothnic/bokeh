@@ -22,12 +22,14 @@ columns simultaneously, which will only detect the combinations that exist.
 
 from itertools import product
 
+
 class Coord(object):
     x = None
     y = None
 
 
 class Facet(Coord):
+    """A subset of data."""
 
     def __init__(self, data, x=None, y=None):
 
@@ -40,9 +42,13 @@ class Facet(Coord):
         return other
 
 
-class Facets(object):
+class FacetGroup(object):
+    """A generic mapping of individual facets into a coordinate system.
 
-    def __init__(self, data, x=None, y=None, facet_func='Grid'):
+    This would typically not be used standalone.
+    """
+
+    def __init__(self, data, x=None, y=None):
         self.data = data
         x, y = self._validate_inputs(x, y)
         self.x_labels = self.create_labels(x)
@@ -52,7 +58,8 @@ class Facets(object):
     def _validate_inputs(self, x, y):
         return self._to_list(x), self._to_list(y)
 
-    def _to_list(self, val):
+    @staticmethod
+    def _to_list(val):
         if not isinstance(val, list) and val is not None:
             return [val]
         else:
@@ -62,18 +69,17 @@ class Facets(object):
     def unique(vals):
         return sorted(set(vals))
 
-
     def create_labels(self, axis):
         """Creates the unique labels for the facets."""
 
         if not axis:
             return None
 
+        # Can facet by multiple columns per axis, need to collect
+        # the unique values for each dimension
         labels = {}
-
         for dim in axis:
             labels[dim] = self.unique(self.data[dim])
-
         return labels
 
     def create_facets(self, x_labels, y_labels):
@@ -91,6 +97,10 @@ class Facets(object):
     def filter(self, dim, label):
         return self.data[self.data[dim] == label]
 
+
+class FacetGrid(FacetGroup):
+    """Maps individual facets into a grid of plots."""
+
     @property
     def width(self):
         return len(self.facets.keys())
@@ -102,6 +112,7 @@ class Facets(object):
 
 def cross(x, y):
     return product(x, y)
+
 
 def combinations(unique_vals):
 
