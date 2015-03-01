@@ -43,6 +43,7 @@ class TestFacet(unittest.TestCase):
         y = 'displ'
 
         def plotter_func(data):
+            """A simple plotting function, pre-configured for columns."""
             plot = figure()
             plot.scatter(x=x, y=y, source=data)
             return plot

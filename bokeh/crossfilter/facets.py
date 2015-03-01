@@ -31,7 +31,7 @@ class Coord(object):
 
 
 class Facet(object):
-    """A subset of data."""
+    """Represents a subset of data."""
 
     def __init__(self, dim, value):
 
@@ -75,6 +75,7 @@ class FacetGroup(object):
 
     @staticmethod
     def unique(vals):
+        """A way to get the unique values, sorted by default."""
         return sorted(set(vals))
 
     def create_labels(self, axis):
@@ -91,13 +92,14 @@ class FacetGroup(object):
         return labels
 
     def create_facets(self, labels):
-
+        """Returns a dict containing facets for each value."""
         facets = {}
 
+        # return empty dict if we have no labels for this dimension
         if not labels:
             return facets
 
-
+        # iterate over each dimension/column and its unique values/labels
         for dim, labels in labels.iteritems():
 
             for label in labels:
@@ -119,6 +121,7 @@ class FacetGroup(object):
     def plot(self, plot_func):
         pass
 
+
 class FacetGrid(FacetGroup):
     """Maps individual facets into a grid of plots."""
 
@@ -131,23 +134,28 @@ class FacetGrid(FacetGroup):
         return max(len(self.y_facets.keys()), 1)
 
     def plot(self, plot_func):
+        """Generates a GridPlot with after running plot_func for each case."""
         grid = []
 
+        # iterate over x and y facets, generating each row as a list of plots
         for x_dim, x_facet in self.x_facets.iteritems():
-
             row = []
             for y_dim, y_facet in self.y_facets.iteritems():
+
+                # filter the data for both x and y facets
                 data = self.filter([x_facet, y_facet])
                 data = ColumnDataSource(data=data)
+
+                # append the plot
                 row.append(plot_func(data))
 
             grid.append(row)
 
         return GridPlot(children=grid)
 
+
 def cross(x, y):
     return product(x, y)
-
 
 def combinations(unique_vals):
 
