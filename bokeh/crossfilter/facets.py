@@ -21,6 +21,8 @@ columns simultaneously, which will only detect the combinations that exist.
 """
 
 from itertools import product
+from bokeh.models.plots import GridPlot
+from bokeh.models.sources import ColumnDataSource
 
 
 class Coord(object):
@@ -31,12 +33,14 @@ class Coord(object):
 class Facet(object):
     """A subset of data."""
 
-    def __init__(self, data, x=None, y=None):
+    def __init__(self, dim, value):
 
         self.title = None
-        self.data = data
-        self.x = x
-        self.y = y
+        self.dim = dim
+        self.value = value
+
+    def filter(self, data):
+        return data[data[self.dim] == self.value]
 
     def __mul__(self, other):
         return other
@@ -93,17 +97,27 @@ class FacetGroup(object):
         if not labels:
             return facets
 
+
         for dim, labels in labels.iteritems():
 
             for label in labels:
                 # need to generate x,y coord of facet here
-                facets[dim + str(label)] = Facet(data=self.filter(dim, label))
+                facets[dim + str(label)] = Facet(dim=dim, value=label)
 
         return facets
 
-    def filter(self, dim, label):
-        return self.data[self.data[dim] == label]
+    def filter(self, facets):
+        """Filter down to data for intersection of facets."""
+        data = self.data
 
+        for facet in facets:
+            if not data.empty:
+                data = facet.filter(data)
+
+        return data
+
+    def plot(self, plot_func):
+        pass
 
 class FacetGrid(FacetGroup):
     """Maps individual facets into a grid of plots."""
@@ -116,6 +130,20 @@ class FacetGrid(FacetGroup):
     def height(self):
         return max(len(self.y_facets.keys()), 1)
 
+    def plot(self, plot_func):
+        grid = []
+
+        for x_dim, x_facet in self.x_facets.iteritems():
+
+            row = []
+            for y_dim, y_facet in self.y_facets.iteritems():
+                data = self.filter([x_facet, y_facet])
+                data = ColumnDataSource(data=data)
+                row.append(plot_func(data))
+
+            grid.append(row)
+
+        return GridPlot(children=grid)
 
 def cross(x, y):
     return product(x, y)

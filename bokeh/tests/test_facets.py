@@ -1,7 +1,9 @@
 __author__ = 'Nick'
 
 import unittest
-from ..crossfilter.facets import FacetGrid, Facet
+from ..crossfilter.facets import FacetGrid
+from ..plotting import figure, output_file, save, show
+from ..models.plots import GridPlot
 
 
 class TestFacet(unittest.TestCase):
@@ -33,6 +35,23 @@ class TestFacet(unittest.TestCase):
         facets = FacetGrid(self.df, x='cyl', y='yr')
         self.assertEqual(facets.width, 5)
         self.assertEqual(facets.height, 13)
+
+    def test_facet_xy_grid(self):
+        facets = FacetGrid(self.df, x='cyl', y='yr')
+
+        x = 'mpg'
+        y = 'displ'
+
+        def plotter_func(data):
+            plot = figure()
+            plot.scatter(x=x, y=y, source=data)
+            return plot
+
+        grid = facets.plot(plotter_func)
+        self.assertIsInstance(grid, GridPlot)
+        #output_file(filename='test.html')
+        #show(grid)
+
 
 if __name__ == "__main__":
     unittest.main()
