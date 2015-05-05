@@ -124,6 +124,10 @@ class ColumnMetadata(HasProps):
     name = String(help="""
     The name of the column on the ColumnDataSource.""")
 
+    units = String
+
+    description = String
+
     types = List(Instance(ColumnType), default=[], help="""
     A list of valid types that match the kind of data contained in the
     column""")
