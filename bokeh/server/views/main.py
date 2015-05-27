@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 import logging
 log = logging.getLogger(__name__)
@@ -19,7 +20,6 @@ from bokeh.templates import AUTOLOAD
 from .bbauth import handle_auth_error
 from ..app import bokeh_app
 from ..crossdomain import crossdomain
-from ..models import convenience as mconv
 from ..models import docs
 from ..models import user
 from ..serverbb import prune, BokehServerTransaction, get_temporary_docid
@@ -268,7 +268,7 @@ def get_bokeh_info_one_object(docid, objid):
 def show_obj(docid, objid):
     bokehuser = bokeh_app.current_user()
     doc = docs.Doc.load(bokeh_app.servermodel_storage, docid)
-    if not bokehuser and not doc.public:
+    if not bokehuser and not doc.published:
         return redirect(url_for(".login_get", next=request.url))
     resources = request_resources()
     public = request.values.get('public', 'false').lower() == 'true'
@@ -283,7 +283,6 @@ def show_obj(docid, objid):
                   public=public,
                   hide_navbar=True,
                   splitjs=server_settings.splitjs,
-                  username=bokehuser.username,
                   loglevel=resources.log_level)
 
 @bokeh_app.route('/bokeh/wsurl/', methods=['GET', 'OPTIONS'])

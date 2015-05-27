@@ -1,31 +1,33 @@
 
-.. _bokeh_dot_charts:
+.. _bokeh.charts:
 
 ``bokeh.charts`` Interface
-##########################
+==========================
 
 .. contents::
     :local:
     :depth: 2
 
 Chart Functions
-===============
+---------------
 
-.. autofunction:: bokeh.charts.Area
-.. autofunction:: bokeh.charts.Bar
-.. autofunction:: bokeh.charts.BoxPlot
-.. autofunction:: bokeh.charts.Donut
-.. autofunction:: bokeh.charts.Dot
-.. autofunction:: bokeh.charts.HeatMap
-.. autofunction:: bokeh.charts.Histogram
-.. autofunction:: bokeh.charts.Horizon
-.. autofunction:: bokeh.charts.Line
-.. autofunction:: bokeh.charts.Scatter
-.. autofunction:: bokeh.charts.Step
-.. autofunction:: bokeh.charts.TimeSeries
+.. automodule:: bokeh.charts
+
+    .. autofunction:: Area
+    .. autofunction:: Bar
+    .. autofunction:: BoxPlot
+    .. autofunction:: Donut
+    .. autofunction:: Dot
+    .. autofunction:: HeatMap
+    .. autofunction:: Histogram
+    .. autofunction:: Horizon
+    .. autofunction:: Line
+    .. autofunction:: Scatter
+    .. autofunction:: Step
+    .. autofunction:: TimeSeries
 
 Helper Classes
-==============
+--------------
 
 .. autoclass:: bokeh.charts.Chart
     :members:
@@ -35,18 +37,53 @@ Helper Classes
     :members:
     :undoc-members:
 
-Builders
-========
+.. _bokeh_dot_charts_builders:
 
-.. autofunction:: bokeh.charts.builder.area_builder.AreaBuilder
-.. autofunction:: bokeh.charts.builder.bar_builder.BarBuilder
-.. autofunction:: bokeh.charts.builder.boxplot_builder.BoxPlotBuilder
-.. autofunction:: bokeh.charts.builder.donut_builder.DonutBuilder
-.. autofunction:: bokeh.charts.builder.dot_builder.DotBuilder
-.. autofunction:: bokeh.charts.builder.heatmap_builder.HeatMapBuilder
-.. autofunction:: bokeh.charts.builder.histogram_builder.HistogramBuilder
-.. autofunction:: bokeh.charts.builder.horizon_builder.HorizonBuilder
-.. autofunction:: bokeh.charts.builder.line_builder.LineBuilder
-.. autofunction:: bokeh.charts.builder.scatter_builder.ScatterBuilder
-.. autofunction:: bokeh.charts.builder.step_builder.StepBuilder
-.. autofunction:: bokeh.charts.builder.timeseries_builder.TimeSeriesBuilder
+Builders
+--------
+
+.. autoclass:: bokeh.charts.builder.area_builder.AreaBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.bar_builder.BarBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.boxplot_builder.BoxPlotBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.donut_builder.DonutBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.dot_builder.DotBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.heatmap_builder.HeatMapBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.histogram_builder.HistogramBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.horizon_builder.HorizonBuilder
+
+.. autoclass:: bokeh.charts.builder.line_builder.LineBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.scatter_builder.ScatterBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.step_builder.StepBuilder
+    :members:
+    :undoc-members:
+
+.. autoclass:: bokeh.charts.builder.timeseries_builder.TimeSeriesBuilder
+    :members:
+    :undoc-members:

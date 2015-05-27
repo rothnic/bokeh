@@ -4,7 +4,7 @@ complex plot is a simple way.
 This is the Horizon class which lets you build your Horizon charts just
 passing the arguments to the Chart class and calling the proper functions.
 """
-from __future__ import division
+from __future__ import absolute_import, division
 
 import math
 
@@ -38,11 +38,11 @@ def Horizon(values, index=None, num_folds=3, pos_color='#006400',
             of each other. (default: 3)
         pos_color (color, optional): The color of the positive folds.
             (default: "#006400")
-        ned_color (color, optional): The color of the negative folds.
+        neg_color (color, optional): The color of the negative folds.
             (default: "#6495ed")
 
     In addition the the parameters specific to this chart,
-    :ref:`charts_generic_arguments` are also accepted as keyword parameters.
+    :ref:`userguide_charts_generic_arguments` are also accepted as keyword parameters.
 
     Returns:
         a new :class:`Chart <bokeh.charts.Chart>`
@@ -54,18 +54,19 @@ def Horizon(values, index=None, num_folds=3, pos_color='#006400',
 
         import datetime
         from collections import OrderedDict
-        from bokeh.charts import Horizon
-        from bokeh.plotting import output_file, show
+        from bokeh.charts import Horizon, output_file, show
 
         now = datetime.datetime.now()
-        dts = [now+datetime.timedelta(seconds=i) for i in range(5)]
+        dts = [now+datetime.timedelta(seconds=i) for i in range(10)]
+
         xyvalues = OrderedDict({'Date': dts})
-        y_python = xyvalues['python'] = [2, 3, 7, 5, 26]
-        y_pypy = xyvalues['pypy'] = [12, 33, 47, 15, 126]
-        y_jython = xyvalues['jython'] = [22, 43, 10, 25, 26]
+        y_python = xyvalues['python'] = [2, 3, 7, 5, 26, 27, 27, 28, 26, 20]
+        y_pypy = xyvalues['pypy'] = [12, 33, 47, 15, 126, 122, 95, 90, 110, 112]
+        y_jython = xyvalues['jython'] = [22, 43, 10, 25, 26, 25, 26, 45, 26, 30]
+
+        hz = Horizon(xyvalues, index='Date', title="Horizon Example", ylabel='Sample Data', xlabel='')
 
         output_file('horizon.html')
-        hz = Horizon(xyvalues, index='Date', title="horizon", ylabel='Stock Prices')
         show(hz)
 
     """
@@ -285,7 +286,7 @@ class HorizonBuilder(Builder):
         calculate the proper ranges.
         """
         self._source = ColumnDataSource(self._data)
-        self.x_range = DataRange1d(rangepadding=0, sources=[self._source.columns(self._attr[0])])
+        self.x_range = DataRange1d(range_padding=0)
         self.y_range = Range1d(start=0, end=self._max_y)
 
     def _yield_renderers(self):

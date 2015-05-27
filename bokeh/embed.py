@@ -11,6 +11,9 @@ these different cases.
 
 '''
 
+from __future__ import absolute_import
+
+from warnings import warn
 import uuid
 
 from .protocol import serialize_json
@@ -19,9 +22,16 @@ from .templates import (
     AUTOLOAD, AUTOLOAD_SERVER, AUTOLOAD_STATIC, FILE,
     NOTEBOOK_DIV, PLOT_DIV, PLOT_JS, PLOT_SCRIPT, RESOURCES
 )
-from .utils import encode_utf8
+from .util.string import encode_utf8
 
-def components(plot_object, resources):
+
+def _wrap_in_function(code):
+    # Indent and wrap Bokeh function def around
+    code = "\n".join([ "    " + line for line in code.split("\n") ])
+    return 'Bokeh.$(function() {\n%s\n});' % code
+
+
+def components(plot_object, resources=None):
     ''' Return HTML components to embed a Bokeh plot.
 
     The data for the plot is stored directly in the returned HTML.
@@ -32,15 +42,20 @@ def components(plot_object, resources):
     Args:
         plot_object (PlotObject) : Bokeh object to render
             typically a Plot or PlotContext
-        resources (Resources, optional) : BokehJS resources config
-
+        resources : Deprecated argument
     Returns:
         (script, div) : UTF-8 encoded
 
     '''
+    
+    if resources is not None:
+        warn('Because the ``resources`` argument is no longer needed, '
+             'is it deprecated and will be removed in'
+             'a future version.', DeprecationWarning, stacklevel=2)
+    
     ref = plot_object.ref
     elementid = str(uuid.uuid4())
-
+    
     js = PLOT_JS.render(
         elementid = elementid,
         modelid = ref["id"],
@@ -48,7 +63,7 @@ def components(plot_object, resources):
         all_models = serialize_json(plot_object.dump()),
     )
     script = PLOT_SCRIPT.render(
-        plot_js = resources.js_wrapper(js),
+        plot_js = _wrap_in_function(js),
     )
     div = PLOT_DIV.render(elementid=elementid)
 
@@ -73,7 +88,6 @@ def notebook_div(plot_object):
 
     '''
     ref = plot_object.ref
-    resources = Resources()
     elementid = str(uuid.uuid4())
 
     js = PLOT_JS.render(
@@ -83,7 +97,7 @@ def notebook_div(plot_object):
         all_models = serialize_json(plot_object.dump()),
     )
     script = PLOT_SCRIPT.render(
-        plot_js = resources.js_wrapper(js),
+        plot_js = _wrap_in_function(js),
     )
     div = PLOT_DIV.render(elementid=elementid)
     html = NOTEBOOK_DIV.render(
@@ -117,7 +131,7 @@ def file_html(plot_object, resources, title, template=FILE):
         js_files = resources.js_files,
         css_files = resources.css_files,
     )
-    script, div = components(plot_object, resources)
+    script, div = components(plot_object)
     html = template.render(
         title = title,
         plot_resources = plot_resources,
@@ -173,36 +187,6 @@ def autoload_static(plot_object, resources, script_path):
     return encode_utf8(js), encode_utf8(tag)
 
 
-def autoload_server(plot_object, session):
-    ''' Return a script tag that can be used to embed Bokeh Plots from
-    a Bokeh Server.
-
-    The data for the plot is stored on the Bokeh Server.
-
-    Args:
-        plot_object (PlotObject) :
-        session (session) :
-
-    Returns:
-        tag :
-            a ``<script>`` tag that will execute an autoload script
-            loaded from the Bokeh Server
-
-    '''
-    elementid = str(uuid.uuid4())
-    resources = Resources(root_url=session.root_url, mode="server")
-    tag = AUTOLOAD_SERVER.render(
-        src_path = resources._autoload_path(elementid),
-        elementid = elementid,
-        modelid = plot_object._id,
-        root_url = resources.root_url,
-        docid =  session.docid,
-        docapikey = session.apikey,
-        loglevel = resources.log_level,
-    )
-
-    return encode_utf8(tag)
-
 def autoload_server(plot_object, session, public=False):
     ''' Return a script tag that can be used to embed Bokeh Plots from
     a Bokeh Server.
@@ -211,7 +195,7 @@ def autoload_server(plot_object, session, public=False):
 
     Args:
         plot_object (PlotObject) :
-        session (session) :
+        session (Session) :
 
     Returns:
         tag :

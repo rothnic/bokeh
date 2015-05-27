@@ -9,7 +9,7 @@ from ..properties import Int, String, Enum, Instance, List, Dict, Tuple, Include
 from ..mixins import LineProps, TextProps
 from ..enums import Units, Orientation
 
-from .sources import DataSource, ServerDataSource
+from .sources import DataSource
 from .glyphs import Glyph
 
 class Renderer(PlotObject):
@@ -80,7 +80,7 @@ class Legend(Renderer):
     """)
 
     label_standoff = Int(15, help="""
-    The distance in pixels
+    The distance in pixels to separate the label from its associated glyph.
     """)
 
     label_height = Int(20, help="""
@@ -104,7 +104,7 @@ class Legend(Renderer):
     """)
 
     legend_spacing = Int(3, help="""
-    Amount of spacing between legend entried
+    Amount of spacing between legend entries
     """)
 
     legends = List(Tuple(String, List(Instance(GlyphRenderer))), help="""

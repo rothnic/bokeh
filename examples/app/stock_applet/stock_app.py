@@ -140,7 +140,7 @@ class StockApp(VBox):
     @property
     def selected_df(self):
         pandas_df = self.df
-        selected = self.source.selected
+        selected = self.source.selected['1d']['indices']
         if selected:
             pandas_df = pandas_df.iloc[selected, :]
         return pandas_df
@@ -259,6 +259,6 @@ class StockApp(VBox):
 # then just remove this block of code.
 @bokeh_app.route("/bokeh/stocks/")
 @object_page("stocks")
-def make_object():
+def make_stocks():
     app = StockApp.create()
     return app

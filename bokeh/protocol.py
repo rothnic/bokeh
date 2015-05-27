@@ -1,11 +1,12 @@
+from __future__ import absolute_import
+
 import json
 import logging
-import time
 import datetime as dt
 import calendar
+import decimal
 
 import numpy as np
-from six.moves import cPickle as pickle
 
 try:
     import pandas as pd
@@ -56,6 +57,8 @@ class BokehJSONEncoder(json.JSONEncoder):
     def transform_numerical_array(self, obj):
         """handles nans/inf conversion
         """
+        if isinstance(obj, np.ma.MaskedArray):
+            obj = obj.filled(np.nan)  # Set masked values to nan
         if not np.isnan(obj).any() and not np.isinf(obj).any():
             return obj.tolist()
         else:
@@ -90,6 +93,9 @@ class BokehJSONEncoder(json.JSONEncoder):
         elif is_dateutil and isinstance(obj, relativedelta):
             return dict(years=obj.years, months=obj.months, days=obj.days, hours=obj.hours,
                 minutes=obj.minutes, seconds=obj.seconds, microseconds=obj.microseconds)
+        # Decimal
+        elif isinstance(obj, decimal.Decimal):
+            return float(obj)
         else:
             return super(BokehJSONEncoder, self).default(obj)
 
