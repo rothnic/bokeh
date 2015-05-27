@@ -1,9 +1,9 @@
 __author__ = 'Nick'
 
 import unittest
-from ..crossfilter.facets import FacetGrid
-from ..plotting import figure, output_file, save, show
-from ..models.plots import GridPlot
+from bokeh.crossfilter.facets import FacetGrid
+from bokeh.plotting import figure, output_file, save, show
+from bokeh.models.plots import GridPlot
 
 
 class TestFacet(unittest.TestCase):
@@ -50,8 +50,8 @@ class TestFacet(unittest.TestCase):
 
         grid = facets.plot(plotter_func)
         self.assertIsInstance(grid, GridPlot)
-        #output_file(filename='test.html')
-        #show(grid)
+        output_file(filename='test.html')
+        show(grid)
 
 
 if __name__ == "__main__":
