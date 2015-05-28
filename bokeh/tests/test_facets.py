@@ -1,8 +1,9 @@
 __author__ = 'Nick'
 
 import unittest
-from bokeh.crossfilter.facets import FacetGrid
-from bokeh.plotting import figure, output_file, save, show
+
+from bokeh.facet import FacetGrid
+from bokeh.plotting import figure, output_file, show
 from bokeh.models.plots import GridPlot
 
 
