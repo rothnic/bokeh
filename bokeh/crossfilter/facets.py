@@ -30,6 +30,29 @@ class Coord(object):
     y = None
 
 
+class Dimension(object):
+
+    def __init__(self, name):
+        self.name = name
+
+
+class Frame(object):
+    """A dimensional context. Represented by N dimensions (dim_1, dim_2, ... dim_N).
+
+    Facet(Frame) -> (label: Coord in Frame, label: Coord in Frame)
+    """
+    def __init__(self, *dims):
+        self.dims = dims
+        for dim in self.dims:
+            setattr(self, dim, Dimension(name=dim))
+
+
+class Cartesian(Frame):
+    """A 2D frame, where glyphs can be mapped into x, y positions by coordinates."""
+    def __init__(self):
+        super(Cartesian, self).__init__('x', 'y')
+
+
 class Facet(object):
     """Represents a subset of data."""
 
@@ -55,16 +78,18 @@ class FacetGroup(object):
     This would typically not be used standalone.
     """
 
-    def __init__(self, data, x=None, y=None):
+    def __init__(self, data, frame, **dims):
         self.data = data
-        x, y = self._validate_inputs(x, y)
-        self.x_labels = self.create_labels(x)
-        self.y_labels = self.create_labels(y)
-        self.x_facets = self.create_facets(self.x_labels)
-        self.y_facets = self.create_facets(self.y_labels)
+        self.dims = frame.dims
+        dims = self._validate_inputs(**dims)
+        self.frame_labels = []
+        self.create_frame_labels()
+        self.create_facets(**dims)
 
-    def _validate_inputs(self, x, y):
-        return self._to_list(x), self._to_list(y)
+    def _validate_inputs(self, **dims):
+        for k, v in dims.iteritems():
+            dims[k] = self._to_list(dims[k])
+        return dims
 
     @staticmethod
     def _to_list(val):
@@ -78,20 +103,27 @@ class FacetGroup(object):
         """A way to get the unique values, sorted by default."""
         return sorted(set(vals))
 
-    def create_labels(self, axis):
+    def create_frame_labels(self):
+
+        for dim in self.dims:
+            prop_name = dim + '_labels'
+            setattr(self, prop_name, None)
+            self.frame_labels.append(prop_name)
+
+    def create_labels(self, **dims):
         """Creates the unique labels for the facets."""
 
-        if not axis:
+        if not dim:
             return None
 
         # Can facet by multiple columns per axis, need to collect
         # the unique values for each dimension
         labels = {}
-        for dim in axis:
+        for name, facet in dims.iteritems():
             labels[dim] = self.unique(self.data[dim])
         return labels
 
-    def create_facets(self, labels):
+    def create_facets(self, **labels):
         """Returns a dict containing facets for each value."""
         facets = {}
 
