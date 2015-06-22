@@ -18,6 +18,17 @@ Nesting only uses the possible combinations. Not sure how to only
 collect the possible combinations, except by assuming that only the
 possible combinations exist. This could simply be a unique on multiple
 columns simultaneously, which will only detect the combinations that exist.
+
+
+from bokeh.facet import tab, grid
+from bokeh.charts import Scatter
+
+grid(
+
+tab('col1', grid('col2', 'col3', Scatter(df, 'col4', 'col5')))
+
+Scatter(
+
 """
 
 from itertools import product
@@ -37,7 +48,12 @@ class Dimension(object):
 
 
 class Frame(object):
-    """A dimensional context. Represented by N dimensions (dim_1, dim_2, ... dim_N).
+    """A dimensional context represented by a set of tuples. Represented by N dimensions (dim_1, dim_2, ... dim_N).
+
+    Frames are not only positional; we can have a color frame constructed from an algebraic expression that yields a
+    color space.
+
+    Each frame is a bounded set which is assigned to its own coordinate system.
 
     Facet(Frame) -> (label: Coord in Frame, label: Coord in Frame)
     """
@@ -46,11 +62,15 @@ class Frame(object):
         for dim in self.dims:
             setattr(self, dim, Dimension(name=dim))
 
+    def assign_coords(self):
+        """Assigns unique cats to coordinates, based on specification"""
+        pass
 
-class Cartesian(Frame):
+
+class Grid(Frame):
     """A 2D frame, where glyphs can be mapped into x, y positions by coordinates."""
-    def __init__(self):
-        super(Cartesian, self).__init__('x', 'y')
+    def __init__(self, x=None, y=None):
+        super(Grid, self).__init__('x', 'y')
 
 
 class Facet(object):
@@ -72,24 +92,24 @@ class Facet(object):
         return other
 
 
-class FacetGroup(object):
+class Facet(object):
     """A generic mapping of individual facets into a coordinate system.
 
     This would typically not be used standalone.
     """
 
-    def __init__(self, data, frame, **dims):
+    def __init__(self, data, *frames):
         self.data = data
         self.dims = frame.dims
-        dims = self._validate_inputs(**dims)
+        vars = self._validate_inputs(**vars)
         self.frame_labels = []
         self.create_frame_labels()
-        self.create_facets(**dims)
+        self.create_facets(**vars)
 
-    def _validate_inputs(self, **dims):
-        for k, v in dims.iteritems():
-            dims[k] = self._to_list(dims[k])
-        return dims
+    def _validate_inputs(self, **vars):
+        for k, v in vars.iteritems():
+            vars[k] = self._to_list(vars[k])
+        return vars
 
     @staticmethod
     def _to_list(val):
@@ -156,6 +176,9 @@ class FacetGroup(object):
 
 class FacetGrid(FacetGroup):
     """Maps individual facets into a grid of plots."""
+
+    def __init__(self, data, **dims):
+        super(FacetGrid, self).__init__(data, Cartesian(), **dims)
 
     @property
     def width(self):
