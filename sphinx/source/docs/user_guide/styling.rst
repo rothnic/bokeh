@@ -18,6 +18,29 @@ following ways:
 
 .. include:: ../includes/colors.txt
 
+.. _userguide_styling_using_palettes:
+
+Using Palettes
+--------------
+
+Palettes are sequences (lists or tuples) of RGB(A) hex strings that define a
+colormap and be can set as the ``palette`` attribute of all chart types from
+``bokeh.charts`` and as the ``color`` attribute of many plot objects from
+``bokeh.plotting``. Bokeh offers many of the standard Brewer palettes, which
+can be imported from the ``bokeh.palettes`` module. For example, importing
+“Spectral6” gives a six element list of RBG(A) hex strings from the Brewer
+“Spectral” colormap.
+
+.. code-block:: python
+
+    >>> from bokeh.palettes import Spectral6
+    >>> Spectral6
+    ['#3288bd', '#99d594', '#e6f598', '#fee08b', '#fc8d59', '#d53e4f']
+
+All of the standard palettes included in bokeh can be found at
+:ref:`bokeh_dot_palettes`. Custom palettes can be made by creating sequences of
+RGB(A) hex strings.
+
 .. _userguide_styling_visual_properties:
 
 Visual Properties
@@ -55,6 +78,82 @@ Text Properties
 
 .. include:: ../includes/text_props.txt
 
+.. _userguide_styling_colors:
+
+Specifying Colors
+~~~~~~~~~~~~~~~~~
+
+Colors properties are used in many places in Bokeh, to specify the colors to
+use for lines, fills or text. Color values can be provided in any of the
+following ways:
+
+.. include:: ../includes/colors.txt
+
+Color alpha can be specified in multiple ways for the visual properties. This
+can be by specifying the alpha directly with ``line|fill_alpha``, or by
+providing the alpha through the RGBA 4-tuple for the ``line|fill_color``.
+
+Additionally, there is also the freedom to use a combination of the two, or no
+alpha at all. The following figure demonstrates each possible combination of
+the inputs for line and fill alphas:
+
+.. bokeh-plot::
+    :source-position: none
+
+    from bokeh.plotting import figure, show, output_file
+    from itertools import product
+    from math import pi
+    output_file('properties_alpha.html')
+
+    cats = ['None', 'Alpha', 'RGB', 'RGBA', 'Alpha+RGB', 'Alpha+RGBA']
+    p = figure(x_range=cats, y_range=cats,
+               title="Fill and Line Color Property Combinations")
+
+    alpha = 0.5
+    fill_color = (242, 44, 64)
+    fill_color_alpha = (242, 44, 64, alpha)
+    line_color = (0, 0, 0)
+    line_color_alpha = (0, 0, 0, alpha)
+
+    # define fill and line color combinations
+    fill = [(1, {}),
+            (2, {'fill_alpha': alpha}),
+            (3, {'fill_color': fill_color}),
+            (4, {'fill_color': fill_color_alpha}),
+            (5, {'fill_alpha': alpha, 'fill_color': fill_color}),
+            (6, {'fill_alpha': alpha, 'fill_color': fill_color_alpha})]
+
+    line = [(1, {}),
+            (2, {'line_alpha': alpha}),
+            (3, {'line_color': line_color}),
+            (4, {'line_color': line_color_alpha}),
+            (5, {'line_alpha': alpha, 'line_color': line_color}),
+            (6, {'line_alpha': alpha, 'line_color': line_color_alpha})]
+
+    # plot intersection of fill and line combinations
+    combinations = product(fill, line)
+    for comb in combinations:
+        x, fill_options = comb[0]
+        y, line_options = comb[1]
+
+        options = fill_options.copy()
+        options.update(line_options)
+
+        p.circle(x, y, line_width=7, size=50, **options)
+
+    p.xaxis[0].axis_label = "Fill Options"
+    p.xaxis[0].major_label_orientation = pi/4
+    p.yaxis[0].axis_label = "Line Options"
+    show(p)
+
+.. note::
+    If using the |bokeh.plotting| interface, another option is to specify
+    ``color`` and/or ``alpha`` as a keyword, as well as the demonstrated color
+    properties. These inputs work by applying the provided value to both of the
+    corresponding ``line`` and ``fill`` properties. However, you can still
+    provide ``fill|line_alpha`` or ``fill|line_color`` in combination with
+    the ``color``/``alpha`` keywords, and the former will take precedence.
+
 .. _userguide_styling_selecting:
 
 Selecting Plot Objects
@@ -86,7 +185,7 @@ The |select| method can query on other attributes as well:
     >>> p.select(name="mycircle")
     [<bokeh.models.renderers.GlyphRenderer at 0x106a4c810>]
 
-This sort of query can be expecially useful for styling visual attributes
+This sort of query can be especially useful for styling visual attributes
 of `Glyphs`_.
 
 .. _userguide_styling_plots:
@@ -97,7 +196,7 @@ Plots
 |Plot| objects themselves have many visual characteristics that can be styled:
 the dimensions of the plot, backgrounds, borders, outlines, etc. This section
 describes how to change these attributes of a Bokeh plot. The example code
-primarly use the |bokeh.plotting| interface to create plots, however the
+primarily uses the |bokeh.plotting| interface to create plots, however the
 instructions apply regardless of how a Bokeh plot was created.
 
 .. _userguide_styling_plot_dimensions:
@@ -260,7 +359,7 @@ list:
     >>> p.select(name="mycircle")[0]
     <bokeh.models.renderers.GlyphRenderer at 0x106a4c810>
 
-Then, the glyph itself is obtained form the ``.glyph`` attribute of a
+Then, the glyph itself is obtained from the ``.glyph`` attribute of a
 ``GlyphRenderer``:
 
 .. _userguide_styling_axes:
@@ -487,11 +586,11 @@ formatters by default in different situations:
 * |LogTickFormatter| --- Default formatter for log axes.
 
 These default tick formatters do not expose many configurable properties.
-To control tick formatting at a finer grained level, use on of the
+To control tick formatting at a finer grained level, use one of the
 |NumeralTickFormatter| or |PrintfTickFormatter| described below.
 
 .. note::
-    To replace an tick formatter on an Axis, you must set the ``formatter``
+    To replace a tick formatter on an Axis, you must set the ``formatter``
     property on an actual ``Axis`` object, not on a splattable list. This is
     why ``p.yaxis[0].formatter``, etc. (with the subscript ``[0]``) is used.
 
@@ -517,7 +616,7 @@ to control the text formatting of axis ticks.
 
     show(p)
 
-Many additional formats are understood, see the full |NumeralTickFormatter|
+Many additional formats are available, see the full |NumeralTickFormatter|
 documentation in the :ref:`refguide`.
 
 ``PrintfTickFormatter``
@@ -577,7 +676,7 @@ that gives the angle (in radians) to rotate from the horizontal:
 There are more properties that Bokeh axes support configuring.
 For a complete listing of all the various attributes that can be set
 on different types of Bokeh axes, consult the :ref:`bokeh.models.axes`
-section of of the :ref:`refguide`.
+section of the :ref:`refguide`.
 
 .. _userguide_styling_grids:
 
@@ -597,7 +696,7 @@ objects:
     [<bokeh.models.grids.Grid at 0x106fa2278>,
      <bokeh.models.grids.Grid at 0x106fa22e8>]
 
-These methods also return splattable lists, so that you can set attributes
+These methods also return splattable lists, so that you can set an attribute
 on the list, as if it was a single object, and the attribute is changed
 for every element of the list:
 
@@ -674,8 +773,8 @@ bands, set their fill color to ``None`` (this is the default).
 Bounds
 ~~~~~~
 
-Grids also support setting expicit bounds between which they are drawn.
-They are set in an identical fashion as axes bounds, with a 2-tuple
+Grids also support setting explicit bounds between which they are drawn.
+They are set in an identical fashion to axes bounds, with a 2-tuple
 of *(start, end)*:
 
 .. bokeh-plot::
@@ -716,7 +815,7 @@ objects:
     >>> p.grid
     [<bokeh.models.renderers.Legend at 0x106fa2278>]
 
-This method also returns a splattable list, so that you can set attributes
+This method also returns a splattable list, so that you can set an attribute
 on the list, as if it was a single object, and the attribute is changed
 for every element of the list:
 

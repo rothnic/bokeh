@@ -237,7 +237,7 @@ class BokehRenderer(Renderer):
         if text not in self.non_text:
             x, y = position
             text = Text(x=x, y=y, text=[text])
-    
+
             alignment_map = {"center": "middle", "top": "top", "bottom": "bottom", "baseline": "bottom"}
             # baseline not implemented in Bokeh, deafulting to bottom.
             text.text_alpha = style['alpha']
@@ -247,7 +247,7 @@ class BokehRenderer(Renderer):
             text.text_baseline = alignment_map[style['valign']]
             text.angle = style['rotation']
             #style['zorder'] # not in Bokeh
-    
+
             ## Using get_fontname() works, but it's oftentimes not available in the browser,
             ## so it's better to just use the font family here.
             #text.text_font = mplText.get_fontname()) not in mplexporter
@@ -256,7 +256,7 @@ class BokehRenderer(Renderer):
             ## we don't really have the full range of font weights, but at least handle bold
             #if mplText.get_weight() in ("bold", "heavy"):
                 #text.text_font_style = bold
-    
+
             self.plot.add_glyph(self.source, text)
 
     def draw_image(self, imdata, extent, coordinates, style, mplobj=None):
@@ -373,6 +373,7 @@ class BokehRenderer(Renderer):
         widths = get_props_cycled(col, col.get_linewidth())
         patches.line_width = self.source.add(widths)
         patches.line_alpha = col.get_alpha()
+        patches.fill_alpha = col.get_alpha()
         offset = col.get_linestyle()[0][0]
         if not col.get_linestyle()[0][1]:
             on_off = []
@@ -398,7 +399,7 @@ def to_bokeh(fig=None, name=None, server=None, notebook=False, pd_obj=True, xkcd
 
     name: str (default=None)
         If this option is provided, then the Bokeh figure will be saved into
-        this HTML file, and then a web browser will used to display it.
+        this HTML file, and then a web browser will be used to display it.
 
     server: str (default=None)
         Fully specified URL of bokeh plot server. Default bokeh plot server
