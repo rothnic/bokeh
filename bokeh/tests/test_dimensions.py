@@ -2,7 +2,9 @@ from __future__ import absolute_import
 
 import unittest
 
-from bokeh.util.dimensions import distinct, cross
+from bokeh.util.dimensions import distinct, cross, nest
+from blaze import Data
+import os
 
 
 class TestDimensions(unittest.TestCase):
@@ -14,6 +16,11 @@ class TestDimensions(unittest.TestCase):
         """
         cls.str_data = ['a', 'a', 'c', 'd', 'b']
         cls.int_data = [2, 5, 3, 3, 7]
+
+        cls.sex_data = ['M', 'M', 'F', 'M']
+        cls.log_data = [True, True, False, False]
+
+        cls.mpg = Data(os.path.abspath('../sampledata/auto-mpg.csv'))
 
     def test_distinct(self):
         dist_data = distinct(self.str_data)
@@ -29,3 +36,8 @@ class TestDimensions(unittest.TestCase):
             assert isinstance(item, tuple)
             # number of values is equal to number of columns provided
             assert len(item) == 2
+
+    def test_nest(self):
+        combs = nest(self.mpg, 'cyl', 'origin')
+        assert len(combs) == 9
+        assert combs[0][0] == 3
